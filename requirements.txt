@@ -1,3 +1,5 @@
+accelerate
 colorlog
 diffusers
 torch
+transformers
