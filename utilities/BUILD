@@ -8,6 +8,15 @@ py_library(
 )
 
 py_library(
+  name = "model",
+  srcs = ["model.py"],
+  deps = [
+    ":memory",
+    ":logger",
+  ],
+)
+
+py_library(
   name = "logger",
   srcs = ["logger.py"],
 )
