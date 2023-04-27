@@ -5,7 +5,6 @@ from utilities.logger import Logger
 
 
 class TestLogger(unittest.TestCase):
-
     @classmethod
     def setUpClass(self):
         self.logger = Logger()
@@ -31,5 +30,5 @@ class TestLogger(unittest.TestCase):
             os.remove(self.log_filepath)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
