@@ -21,8 +21,8 @@ def prepare(logger: Logger) -> [Model, Config]:
     inpainting_model_name = "runwayml/stable-diffusion-inpainting"
 
     model = Model(model_name, inpainting_model_name, logger)
-    model.reduce_memory()
-    model.load()
+    model.set_low_memory_mode()
+    model.load_all()
 
     config = Config()
     return model, config

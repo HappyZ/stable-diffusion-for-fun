@@ -2,7 +2,7 @@ import gc
 import torch
 
 
-def empty_memory():
+def empty_memory_cache():
     """
     Performs garbage collection and empty cache in cuda device.
     """

@@ -9,6 +9,11 @@ from utilities.constants import KEY_PREVIEW
 from utilities.constants import VALUE_PREVIEW_DEFAULT
 from utilities.constants import KEY_SCHEDULER
 from utilities.constants import VALUE_SCHEDULER_DEFAULT
+from utilities.constants import VALUE_SCHEDULER_DDIM
+from utilities.constants import VALUE_SCHEDULER_DPM_SOLVER_MULTISTEP
+from utilities.constants import VALUE_SCHEDULER_EULER_DISCRETE
+from utilities.constants import VALUE_SCHEDULER_LMS_DISCRETE
+from utilities.constants import VALUE_SCHEDULER_PNDM
 from utilities.constants import KEY_SEED
 from utilities.constants import VALUE_SEED_DEFAULT
 from utilities.constants import KEY_STEPS
@@ -55,15 +60,8 @@ class Config:
         return self.__config.get(KEY_SCHEDULER, VALUE_SCHEDULER_DEFAULT)
 
     def set_scheduler(self, scheduler: str):
-        # choices:
-        # "Default"
-        # "DPMSolverMultistepScheduler"
-        # "LMSDiscreteScheduler"
-        # "EulerDiscreteScheduler"
-        # "PNDMScheduler"
-        # "DDIMScheduler"
         if not scheduler:
-            scheduler = "Default"
+            scheduler = VALUE_SCHEDULER_DEFAULT
         self.__logger.info("{} changed from {} to {}".format(KEY_SCHEDULER, self.get_scheduler(), scheduler))
         self.__config[KEY_SCHEDULER] = scheduler
 

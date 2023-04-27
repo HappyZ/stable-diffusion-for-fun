@@ -34,6 +34,7 @@ py_library(
     name="model",
     srcs=["model.py"],
     deps=[
+        ":constants",
         ":memory",
         ":logger",
     ],

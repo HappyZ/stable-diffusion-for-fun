@@ -11,10 +11,5 @@ class Text2Img:
         self.model = model
         self.config = config
 
-    def update_config(config: Config):
-        self.config = config
-    
-    def update_model(model, Model):
-        self.model = model
-    
-    
+    def breakfast(self):
+        self.model.set_txt2img_scheduler(config.get_scheduler())
