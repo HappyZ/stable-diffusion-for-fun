@@ -1,5 +1,8 @@
 accelerate
 colorlog
 diffusers
+numpy
+Pillow
+scikit-image
 torch
 transformers

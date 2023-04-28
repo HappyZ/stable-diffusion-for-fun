@@ -25,6 +25,7 @@ def prepare(logger: Logger) -> [Model, Config]:
     model.load_all()
 
     config = Config()
+    config.set_output_folder("/tmp/")
     return model, config
 
 
@@ -34,7 +35,21 @@ def main():
     model, config = prepare(logger)
     text2img = Text2Img(model, config)
 
-    input("confirm...")
+    text2img.breakfast()
+
+    while True:
+        try:
+            prompt = input("Write prompt: ")
+            if not prompt:
+                prompt = "man riding a horse in space"
+            negative_prompt = input("Write negative prompt: ")
+            if not negative_prompt:
+                negative_prompt = "(deformed iris, deformed pupils, semi-realistic, cgi, 3d, render, sketch, cartoon, drawing, anime:1.4), text, close up, cropped, out of frame, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck"
+            text2img.lunch(prompt=prompt, negative_prompt=negative_prompt)
+        except KeyboardInterrupt:
+            break
+        except BaseException:
+            raise
 
 
 if __name__ == "__main__":

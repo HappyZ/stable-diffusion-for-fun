@@ -1,6 +1,8 @@
 import random
 import time
 
+from utilities.constants import KEY_OUTPUT_FOLDER
+from utilities.constants import VALUE_OUTPUT_FOLDER_DEFAULT
 from utilities.constants import KEY_GUIDANCE_SCALE
 from utilities.constants import VALUE_GUIDANCE_SCALE_DEFAULT
 from utilities.constants import KEY_HEIGHT
@@ -34,6 +36,13 @@ class Config:
 
     def get_config(self) -> dict:
         return self.__config
+    
+    def get_output_folder(self) -> str:
+        return self.__config.get(KEY_OUTPUT_FOLDER, VALUE_OUTPUT_FOLDER_DEFAULT)
+
+    def set_output_folder(self, folder:str):
+        self.__logger.info("{} changed from {} to {}".format(KEY_OUTPUT_FOLDER, self.get_output_folder(), folder))
+        self.__config[KEY_OUTPUT_FOLDER] = folder
 
     def get_guidance_scale(self) -> float:
         return self.__config.get(KEY_GUIDANCE_SCALE, VALUE_GUIDANCE_SCALE_DEFAULT)
