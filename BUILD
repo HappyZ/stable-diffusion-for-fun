@@ -11,5 +11,10 @@ par_binary(
         "//utilities:logger",
         "//utilities:model",
         "//utilities:text2img",
+        "//utilities:envvar",
+        "//utilities:times",
+    ],
+    data=[
+        "templates/index.html",
     ],
 )

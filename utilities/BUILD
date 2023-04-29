@@ -63,6 +63,7 @@ py_library(
     name="text2img",
     srcs=["text2img.py"],
     deps=[
+        ":constants",
         ":config",
         ":logger",
         ":images",

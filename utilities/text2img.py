@@ -1,8 +1,12 @@
 import torch
 from typing import Union
 
+from utilities.constants import BASE64IMAGE
+from utilities.constants import KEY_SEED
+from utilities.constants import KEY_WIDTH
+from utilities.constants import KEY_HEIGHT
+from utilities.constants import KEY_STEPS
 from utilities.config import Config
-from utilities.images import save_image
 from utilities.logger import DummyLogger
 from utilities.memory import empty_memory_cache
 from utilities.model import Model
@@ -22,6 +26,7 @@ class Text2Img:
         logger: DummyLogger = DummyLogger(),
     ):
         self.model = model
+        self.__device = "cpu" if not self.model.use_gpu() else "cuda"
         self.__output_folder = output_folder
         self.__logger = logger
 
@@ -32,12 +37,12 @@ class Text2Img:
     def breakfast(self):
         pass
 
-    def lunch(self, prompt: str, negative_prompt: str = "", config: Config = Config()) -> str:
+    def lunch(self, prompt: str, negative_prompt: str = "", config: Config = Config()) -> dict:
         self.model.set_txt2img_scheduler(config.get_scheduler())
 
         t = get_epoch_now()
         seed = config.get_seed()
-        generator = torch.Generator("cuda").manual_seed(seed)
+        generator = torch.Generator(self.__device).manual_seed(seed)
         self.__logger.info("current seed: {}".format(seed))
 
         result = self.model.txt2img_pipeline(
@@ -59,4 +64,10 @@ class Text2Img:
 
         empty_memory_cache()
 
-        return image_to_base64(result.images[0])
+        return {
+            BASE64IMAGE: image_to_base64(result.images[0]),
+            KEY_SEED.lower(): seed,
+            KEY_WIDTH.lower(): config.get_width(),
+            KEY_HEIGHT.lower(): config.get_height(),
+            KEY_STEPS.lower(): config.get_steps(),
+        }

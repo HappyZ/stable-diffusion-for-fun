@@ -32,7 +32,7 @@ class Model:
             self.__use_gpu = True
             logger.info("running on {}".format(torch.cuda.get_device_name("cuda:0")))
         self.__logger = logger
-        self.__torch_dtype = "auto"
+        self.__torch_dtype = torch.float64
 
         # txt2img and img2img are always loaded together
         self.txt2img_pipeline = None
