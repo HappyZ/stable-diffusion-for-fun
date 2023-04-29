@@ -44,16 +44,24 @@
                         </div>
                     </div>
                     <div class="form-row mb-3">
-                        <label for="prompt" class="form-label">Prompt</label>
-                        <input type="text" class="form-control" id="prompt" aria-describedby="promptHelp"
-                            value="photo of cute cat, RAW photo, (high detailed skin:1.2), 8k uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3">
-                        <div id="promptHelp" class="form-text">Less than 77 words otherwise it'll be truncated</div>
+                        <label for="prompt" class="form-label">Describe Your Image</label>
+                        <input type="text" class="form-control" id="prompt" aria-describedby="promptHelp" value="">
+                        <div id="promptHelp" class="form-text">Less than 77 words otherwise it'll be truncated. Example:
+                            "photo of cute cat, RAW photo, (high detailed skin:1.2), 8k uhd, dslr, soft lighting, high
+                            quality, film grain, Fujifilm XT3"</div>
                     </div>
                     <div class="form-row mb-3">
-                        <label for="negPrompt" class="form-label">Negative Prompt</label>
+                        <label for="negPrompt" class="form-label">Describe What's NOT Your Image</label>
                         <input type="text" class="form-control" id="negPrompt" aria-describedby="negPromptHelp"
-                            value="(deformed iris, deformed pupils, semi-realistic, cgi, 3d, render, sketch, cartoon, drawing, anime:1.4), text, close up, cropped, out of frame, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck">
-                        <div id="negPromptHelp" class="form-text">Less than 77 words otherwise it'll be truncated</div>
+                            value="">
+                        <div id="negPromptHelp" class="form-text">Less than 77 words otherwise it'll be truncated.
+                            Example: "(deformed iris, deformed pupils, semi-realistic, cgi, 3d, render, sketch, cartoon,
+                            drawing, anime:1.4), text, close up, cropped, out of frame, worst quality, low quality, jpeg
+                            artifacts, ugly, duplicate, morbid, mutilated, extra fingers, mutated hands, poorly drawn
+                            hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad
+                            proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs,
+                            missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long
+                            neck"</div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
@@ -203,7 +211,12 @@
                 }
 
                 if (promptVal == "") {
-                    alert("needs to write a prompt!");
+                    alert("missing prompt!");
+                    return;
+                }
+
+                if (widthVal < 8 || widthVal > 1024) {
+                    alert("width must be between 8 and 1024!");
                     return;
                 }
 
@@ -212,8 +225,18 @@
                     return;
                 }
 
+                if (heightVal < 8 || heightVal > 1024) {
+                    alert("height must be between 8 and 1024!");
+                    return;
+                }
+
                 if (heightVal % 8 != 0) {
                     alert("height must be divisible by 8!");
+                    return;
+                }
+
+                if (stepsVal > 200 || stepsVal < 1) {
+                    alert("steps value must be between 1 and 200!");
                     return;
                 }
 
