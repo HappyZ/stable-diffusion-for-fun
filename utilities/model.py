@@ -31,6 +31,8 @@ class Model:
         if use_gpu and torch.cuda.is_available():
             self.__use_gpu = True
             logger.info("running on {}".format(torch.cuda.get_device_name("cuda:0")))
+        else:
+            logger.info("running on CPU (expect it to be verrry sloooow)")
         self.__logger = logger
         self.__torch_dtype = torch.float64
 

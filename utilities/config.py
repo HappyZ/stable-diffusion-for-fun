@@ -54,7 +54,7 @@ class Config:
         return self
 
     def get_guidance_scale(self) -> float:
-        return self.__config.get(KEY_GUIDANCE_SCALE, VALUE_GUIDANCE_SCALE_DEFAULT)
+        return float(self.__config.get(KEY_GUIDANCE_SCALE, VALUE_GUIDANCE_SCALE_DEFAULT))
 
     def set_guidance_scale(self, scale: float):
         self.__logger.info("{} changed from {} to {}".format(KEY_GUIDANCE_SCALE, self.get_guidance_scale(), scale))
@@ -62,7 +62,7 @@ class Config:
         return self
 
     def get_height(self) -> int:
-        return self.__config.get(KEY_HEIGHT, VALUE_HEIGHT_DEFAULT)
+        return int(self.__config.get(KEY_HEIGHT, VALUE_HEIGHT_DEFAULT))
 
     def set_height(self, value: int):
         self.__logger.info("{} changed from {} to {}".format(KEY_HEIGHT, self.get_height(), value))
@@ -88,7 +88,7 @@ class Config:
         return self
 
     def get_seed(self) -> int:
-        seed = self.__config.get(KEY_SEED, VALUE_SEED_DEFAULT)
+        seed = int(self.__config.get(KEY_SEED, VALUE_SEED_DEFAULT))
         if seed == 0:
             random.seed(int(time.time_ns()))
             seed = random.getrandbits(64)
@@ -100,7 +100,7 @@ class Config:
         return self
 
     def get_steps(self) -> int:
-        return self.__config.get(KEY_STEPS, VALUE_STEPS_DEFAULT)
+        return int(self.__config.get(KEY_STEPS, VALUE_STEPS_DEFAULT))
 
     def set_steps(self, steps: int):
         self.__logger.info("{} changed from {} to {}".format(KEY_STEPS, self.get_steps(), steps))
@@ -108,7 +108,7 @@ class Config:
         return self
 
     def get_width(self) -> int:
-        return self.__config.get(KEY_WIDTH, VALUE_WIDTH_DEFAULT)
+        return int(self.__config.get(KEY_WIDTH, VALUE_WIDTH_DEFAULT))
 
     def set_width(self, value: int):
         self.__logger.info("{} changed from {} to {}".format(KEY_WIDTH, self.get_width(), value))

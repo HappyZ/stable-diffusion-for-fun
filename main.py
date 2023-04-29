@@ -35,6 +35,7 @@ from utilities.text2img import Text2Img
 
 
 app = Flask(__name__)
+fast_web_debugging = False
 memory_lock = Lock()
 event_termination = Event()
 logger = Logger(name=LOGGER_NAME)
@@ -183,10 +184,11 @@ def load_model(logger: Logger) -> Model:
     # "stabilityai/stable-diffusion-2-1"
     # "SG161222/Realistic_Vision_V2.0"
     # "darkstorm2150/Protogen_x3.4_Official_Release"
+    # "darkstorm2150/Protogen_x5.8_Official_Release"
     # "prompthero/openjourney"
     # "naclbit/trinart_stable_diffusion_v2"
     # "hakurei/waifu-diffusion"
-    model_name = "darkstorm2150/Protogen_x3.4_Official_Release"
+    model_name = "darkstorm2150/Protogen_x5.8_Official_Release"
     # inpainting model candidates:
     # "runwayml/stable-diffusion-inpainting"
     inpainting_model_name = "runwayml/stable-diffusion-inpainting"
@@ -239,7 +241,12 @@ def backend(event_termination):
 
 
 def main():
-    # app.run(host="0.0.0.0")
+    if fast_web_debugging:
+        try:
+            app.run(host="0.0.0.0")
+        except KeyboardInterrupt:
+            pass
+        return
     thread = Thread(target=backend, args=(event_termination,))
     thread.start()
     # ugly solution for now
@@ -249,7 +256,7 @@ def main():
         thread.join()
     except KeyboardInterrupt:
         event_termination.set()
-        thread.join()
+        thread.join(1)
 
 
 if __name__ == "__main__":
