@@ -1,4 +1,8 @@
 LOGGER_NAME = "main"
+MAX_JOB_NUMBER = 10
+
+KEY_APP = "APP"
+VALUE_APP = "demo"
 
 KEY_OUTPUT_FOLDER = "OUTFOLDER"
 VALUE_OUTPUT_FOLDER_DEFAULT = ""
@@ -26,5 +30,33 @@ VALUE_SCHEDULER_EULER_DISCRETE = "EulerDiscreteScheduler"
 VALUE_SCHEDULER_PNDM = "PNDMScheduler"
 VALUE_SCHEDULER_DDIM = "DDIMScheduler"
 
+KEY_PROMPT = "PROMPT"
+KEY_NEG_PROMPT = "NEG_PROMPT"
+
 KEY_PREVIEW = "PREVIEW"
 VALUE_PREVIEW_DEFAULT = True
+
+# REST API Keys
+API_KEY = "api_key"
+API_KEY_FOR_DEMO = "demo"
+UUID = "uuid"
+
+BASE64IMAGE = "img"
+KEY_JOB_STATUS = "status"
+VALUE_JOB_PENDING = "pending"
+VALUE_JOB_RUNNING = "running"
+VALUE_JOB_DONE = "done"
+
+REQUIRED_KEYS = [
+    API_KEY.lower(),
+    KEY_PROMPT.lower(),
+]
+OPTIONAL_KEYS = [
+    KEY_NEG_PROMPT.lower(),
+    KEY_SEED.lower(),
+    KEY_WIDTH.lower(),
+    KEY_HEIGHT.lower(),
+    KEY_GUIDANCE_SCALE.lower(),
+    KEY_STEPS.lower(),
+    KEY_SCHEDULER.lower(),
+]

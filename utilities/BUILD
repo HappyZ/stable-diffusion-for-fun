@@ -16,6 +16,18 @@ py_library(
     srcs=["constants.py"],
 )
 
+
+py_library(
+  name = "envvar",
+  srcs = ["envvar.py"],
+)
+
+py_test(
+  name = "envvar_test",
+  srcs = ["envvar_test.py"],
+  deps = [":envvar"],
+)
+
 py_library(
   name = "images",
   srcs = ["images.py"],

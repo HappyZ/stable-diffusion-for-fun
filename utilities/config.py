@@ -22,6 +22,7 @@ from utilities.constants import KEY_STEPS
 from utilities.constants import VALUE_STEPS_DEFAULT
 from utilities.constants import KEY_WIDTH
 from utilities.constants import VALUE_WIDTH_DEFAULT
+from utilities.constants import OPTIONAL_KEYS
 from utilities.logger import DummyLogger
 
 
@@ -37,12 +38,20 @@ class Config:
     def get_config(self) -> dict:
         return self.__config
     
+    def set_config(self, config: dict):
+        for key in config:
+            if key not in OPTIONAL_KEYS:
+                continue
+            self.__config[key.upper()] = config[key]
+        return self
+    
     def get_output_folder(self) -> str:
         return self.__config.get(KEY_OUTPUT_FOLDER, VALUE_OUTPUT_FOLDER_DEFAULT)
 
     def set_output_folder(self, folder:str):
         self.__logger.info("{} changed from {} to {}".format(KEY_OUTPUT_FOLDER, self.get_output_folder(), folder))
         self.__config[KEY_OUTPUT_FOLDER] = folder
+        return self
 
     def get_guidance_scale(self) -> float:
         return self.__config.get(KEY_GUIDANCE_SCALE, VALUE_GUIDANCE_SCALE_DEFAULT)
@@ -50,6 +59,7 @@ class Config:
     def set_guidance_scale(self, scale: float):
         self.__logger.info("{} changed from {} to {}".format(KEY_GUIDANCE_SCALE, self.get_guidance_scale(), scale))
         self.__config[KEY_GUIDANCE_SCALE] = scale
+        return self
 
     def get_height(self) -> int:
         return self.__config.get(KEY_HEIGHT, VALUE_HEIGHT_DEFAULT)
@@ -57,6 +67,7 @@ class Config:
     def set_height(self, value: int):
         self.__logger.info("{} changed from {} to {}".format(KEY_HEIGHT, self.get_height(), value))
         self.__config[KEY_HEIGHT] = value
+        return self
 
     def get_preview(self) -> bool:
         return self.__config.get(KEY_PREVIEW, VALUE_PREVIEW_DEFAULT)
@@ -64,6 +75,7 @@ class Config:
     def set_preview(self, boolean: bool):
         self.__logger.info("{} changed from {} to {}".format(KEY_PREVIEW, self.get_preview(), boolean))
         self.__config[KEY_PREVIEW] = boolean
+        return self
 
     def get_scheduler(self) -> str:
         return self.__config.get(KEY_SCHEDULER, VALUE_SCHEDULER_DEFAULT)
@@ -73,6 +85,7 @@ class Config:
             scheduler = VALUE_SCHEDULER_DEFAULT
         self.__logger.info("{} changed from {} to {}".format(KEY_SCHEDULER, self.get_scheduler(), scheduler))
         self.__config[KEY_SCHEDULER] = scheduler
+        return self
 
     def get_seed(self) -> int:
         seed = self.__config.get(KEY_SEED, VALUE_SEED_DEFAULT)
@@ -84,6 +97,7 @@ class Config:
     def set_seed(self, seed: int):
         self.__logger.info("{} changed from {} to {}".format(KEY_SEED, self.get_seed(), seed))
         self.__config[KEY_SEED] = seed
+        return self
 
     def get_steps(self) -> int:
         return self.__config.get(KEY_STEPS, VALUE_STEPS_DEFAULT)
@@ -91,6 +105,7 @@ class Config:
     def set_steps(self, steps: int):
         self.__logger.info("{} changed from {} to {}".format(KEY_STEPS, self.get_steps(), steps))
         self.__config[KEY_STEPS] = steps
+        return self
 
     def get_width(self) -> int:
         return self.__config.get(KEY_WIDTH, VALUE_WIDTH_DEFAULT)
@@ -98,3 +113,4 @@ class Config:
     def set_width(self, value: int):
         self.__logger.info("{} changed from {} to {}".format(KEY_WIDTH, self.get_width(), value))
         self.__config[KEY_WIDTH] = value
+        return self

@@ -2,6 +2,7 @@ accelerate
 colorlog
 diffusers
 numpy
+Flask
 Pillow
 scikit-image
 torch
