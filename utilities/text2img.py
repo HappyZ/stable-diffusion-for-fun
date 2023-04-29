@@ -66,7 +66,7 @@ class Text2Img:
 
         return {
             BASE64IMAGE: image_to_base64(result.images[0]),
-            KEY_SEED.lower(): seed,
+            KEY_SEED.lower(): str(seed),
             KEY_WIDTH.lower(): config.get_width(),
             KEY_HEIGHT.lower(): config.get_height(),
             KEY_STEPS.lower(): config.get_steps(),

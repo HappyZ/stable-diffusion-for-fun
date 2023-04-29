@@ -68,7 +68,7 @@
                             <div class="row">
                                 <div class="form-row col-md-6">
                                     <label for="inputSeed">Seed</label>
-                                    <input type="number" class="form-control" id="inputSeed"
+                                    <input type="text" class="form-control" id="inputSeed"
                                         aria-describedby="inputSeedHelp" value="">
                                     <div id="inputSeedHelp" class="form-text">Leave it empty or put 0 to use a random
                                         seed
@@ -151,7 +151,7 @@
                     console.log(response);
                     if (response.jobs.length == 1) {
                         $('#resultStatus').html(response.jobs[0].status)
-                        $('#resultSeed').html(response.jobs[0].seed)
+                        $('#resultSeed').html("seed: " + response.jobs[0].seed)
                         if (response.jobs[0].status == "done") {
                             $('#newJobImg').attr('src', response.jobs[0].img);
                             return;
@@ -193,9 +193,9 @@
                 var apikeyVal = $('#apiKey').val();
                 var promptVal = $('#prompt').val();
                 var negPromptVal = $('#negPrompt').val();
-                var seedVal = parseInt($('#inputSeed').val());
-                if (isNaN(seedVal)) {
-                    seedVal = 0;
+                var seedVal = $('#inputSeed').val();
+                if (seedVal == "0" || seedVal == "") {
+                    seedVal = "0";
                 }
                 var stepsVal = parseInt($('#inputSteps').val());
                 if (isNaN(stepsVal)) {
