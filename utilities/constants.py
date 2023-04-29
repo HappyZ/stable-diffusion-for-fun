@@ -46,6 +46,7 @@ KEY_JOB_STATUS = "status"
 VALUE_JOB_PENDING = "pending"
 VALUE_JOB_RUNNING = "running"
 VALUE_JOB_DONE = "done"
+VALUE_JOB_FAILED = "failed"
 
 REQUIRED_KEYS = [
     API_KEY.lower(),

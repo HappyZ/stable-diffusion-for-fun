@@ -25,6 +25,7 @@ from utilities.constants import VALUE_APP
 from utilities.constants import VALUE_JOB_PENDING
 from utilities.constants import VALUE_JOB_RUNNING
 from utilities.constants import VALUE_JOB_DONE
+from utilities.constants import VALUE_JOB_FAILED
 from utilities.envvar import get_env_var_with_default
 from utilities.envvar import get_env_var
 from utilities.times import wait_for_seconds
@@ -221,9 +222,15 @@ def backend(event_termination):
 
             config = Config().set_config(next_job)
 
-        result_dict = text2img.lunch(
-            prompt=prompt, negative_prompt=negative_prompt, config=config
-        )
+        try:
+            result_dict = text2img.lunch(
+                prompt=prompt, negative_prompt=negative_prompt, config=config
+            )
+        except BaseException as e:
+            logger.error("text2img.lunch error: {}".format(e))
+            local_job_stack.pop(0)
+            next_job[KEY_JOB_STATUS] = VALUE_JOB_FAILED
+            local_completed_jobs.append(next_job)
 
         with memory_lock:
             local_job_stack.pop(0)
