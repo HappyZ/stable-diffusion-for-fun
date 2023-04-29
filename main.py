@@ -22,6 +22,8 @@ from utilities.constants import UUID
 from utilities.constants import VALUE_APP
 from utilities.constants import VALUE_JOB_PENDING
 from utilities.constants import VALUE_JOB_RUNNING
+from utilities.constants import VALUE_JOB_DONE
+from utilities.web import web
 from utilities.envvar import get_env_var_with_default
 from utilities.envvar import get_env_var
 from utilities.times import wait_for_seconds
@@ -179,7 +181,7 @@ def get_jobs():
             jobs.append(job)
         all_matching_completed_jobs = local_completed_jobs.get(req[API_KEY], {})
         if UUID in req:
-            all_matching_completed_jobs = all_matching_completed_jobs.get(req[UUID])
+            all_matching_completed_jobs = all_matching_completed_jobs.get(req[UUID], {})
         for key in all_matching_completed_jobs.keys():
             jobs.append(all_matching_completed_jobs[key])
 
@@ -189,6 +191,10 @@ def get_jobs():
             404,
         )
     return jsonify({"jobs": jobs})
+
+@app.route("/")
+def index():
+    return web()
 
 
 def backend(event_termination):
@@ -240,7 +246,7 @@ def main():
     # ugly solution for now
     # TODO: use a database to track instead of internal memory
     try:
-        app.run()
+        app.run(host='0.0.0.0')
         thread.join()
     except KeyboardInterrupt:
         event_termination.set()

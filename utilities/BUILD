@@ -82,3 +82,8 @@ py_test(
     srcs=["times_test.py"],
     deps=[":times"],
 )
+
+py_library(
+    name="web",
+    srcs=["web.py"],
+)
