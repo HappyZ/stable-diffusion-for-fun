@@ -40,6 +40,7 @@ from utilities.logger import Logger
 from utilities.model import Model
 from utilities.config import Config
 from utilities.text2img import Text2Img
+from utilities.img2img import Img2Img
 
 
 app = Flask(__name__)
