@@ -43,7 +43,7 @@ from utilities.text2img import Text2Img
 
 
 app = Flask(__name__)
-fast_web_debugging = True
+fast_web_debugging = False
 memory_lock = Lock()
 event_termination = Event()
 logger = Logger(name=LOGGER_NAME)
