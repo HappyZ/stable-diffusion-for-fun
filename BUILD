@@ -11,6 +11,7 @@ par_binary(
         "//utilities:logger",
         "//utilities:model",
         "//utilities:text2img",
+        "//utilities:img2img",
         "//utilities:envvar",
         "//utilities:times",
     ],

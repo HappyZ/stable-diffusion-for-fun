@@ -14,14 +14,21 @@ from utilities.constants import API_KEY
 from utilities.constants import API_KEY_FOR_DEMO
 from utilities.constants import KEY_APP
 from utilities.constants import KEY_JOB_STATUS
+from utilities.constants import KEY_JOB_TYPE
 from utilities.constants import KEY_PROMPT
 from utilities.constants import KEY_NEG_PROMPT
 from utilities.constants import LOGGER_NAME
+from utilities.constants import LOGGER_NAME_IMG2IMG
+from utilities.constants import LOGGER_NAME_TXT2IMG
+from utilities.constants import REFERENCE_IMG
 from utilities.constants import MAX_JOB_NUMBER
 from utilities.constants import OPTIONAL_KEYS
 from utilities.constants import REQUIRED_KEYS
 from utilities.constants import UUID
 from utilities.constants import VALUE_APP
+from utilities.constants import VALUE_JOB_TXT2IMG
+from utilities.constants import VALUE_JOB_IMG2IMG
+from utilities.constants import VALUE_JOB_INPAINTING
 from utilities.constants import VALUE_JOB_PENDING
 from utilities.constants import VALUE_JOB_RUNNING
 from utilities.constants import VALUE_JOB_DONE
@@ -36,7 +43,7 @@ from utilities.text2img import Text2Img
 
 
 app = Flask(__name__)
-fast_web_debugging = False
+fast_web_debugging = True
 memory_lock = Lock()
 event_termination = Event()
 logger = Logger(name=LOGGER_NAME)
@@ -64,6 +71,9 @@ def add_job():
     for required_key in REQUIRED_KEYS:
         if required_key not in req:
             return jsonify({"msg": "missing one or more required keys"}), 404
+
+    if req[KEY_JOB_TYPE] == VALUE_JOB_IMG2IMG and REFERENCE_IMG not in req:
+        return jsonify({"msg": "missing reference image"}), 404
 
     if len(local_job_stack) > MAX_JOB_NUMBER:
         return jsonify({"msg": "too many jobs in queue, please wait"}), 500
@@ -204,9 +214,11 @@ def load_model(logger: Logger) -> Model:
 
 def backend(event_termination):
     model = load_model(logger)
-    text2img = Text2Img(model, logger=logger)
+    text2img = Text2Img(model, logger=Logger(name=LOGGER_NAME_TXT2IMG))
+    img2img = Img2Img(model, logger=Logger(name=LOGGER_NAME_IMG2IMG))
 
     text2img.breakfast()
+    img2img.breakfast()
 
     while not event_termination.is_set():
         wait_for_seconds(1)
@@ -223,9 +235,18 @@ def backend(event_termination):
             config = Config().set_config(next_job)
 
         try:
-            result_dict = text2img.lunch(
-                prompt=prompt, negative_prompt=negative_prompt, config=config
-            )
+            if next_job[KEY_JOB_TYPE] == VALUE_JOB_TXT2IMG:
+                result_dict = text2img.lunch(
+                    prompt=prompt, negative_prompt=negative_prompt, config=config
+                )
+            elif next_job[KEY_JOB_TYPE] == VALUE_JOB_IMG2IMG:
+                ref_img = next_job[REFERENCE_IMG]
+                result_dict = img2img.lunch(
+                    prompt=prompt,
+                    negative_prompt=negative_prompt,
+                    reference_image=ref_img,
+                    config=config,
+                )
         except BaseException as e:
             logger.error("text2img.lunch error: {}".format(e))
             local_job_stack.pop(0)

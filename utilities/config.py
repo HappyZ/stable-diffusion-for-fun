@@ -1,5 +1,6 @@
 import random
 import time
+from typing import Union
 
 from utilities.constants import KEY_OUTPUT_FOLDER
 from utilities.constants import VALUE_OUTPUT_FOLDER_DEFAULT
@@ -37,27 +38,37 @@ class Config:
 
     def get_config(self) -> dict:
         return self.__config
-    
+
     def set_config(self, config: dict):
         for key in config:
             if key not in OPTIONAL_KEYS:
                 continue
             self.__config[key.upper()] = config[key]
         return self
-    
+
     def get_output_folder(self) -> str:
         return self.__config.get(KEY_OUTPUT_FOLDER, VALUE_OUTPUT_FOLDER_DEFAULT)
 
-    def set_output_folder(self, folder:str):
-        self.__logger.info("{} changed from {} to {}".format(KEY_OUTPUT_FOLDER, self.get_output_folder(), folder))
+    def set_output_folder(self, folder: str):
+        self.__logger.info(
+            "{} changed from {} to {}".format(
+                KEY_OUTPUT_FOLDER, self.get_output_folder(), folder
+            )
+        )
         self.__config[KEY_OUTPUT_FOLDER] = folder
         return self
 
     def get_guidance_scale(self) -> float:
-        return float(self.__config.get(KEY_GUIDANCE_SCALE, VALUE_GUIDANCE_SCALE_DEFAULT))
+        return float(
+            self.__config.get(KEY_GUIDANCE_SCALE, VALUE_GUIDANCE_SCALE_DEFAULT)
+        )
 
     def set_guidance_scale(self, scale: float):
-        self.__logger.info("{} changed from {} to {}".format(KEY_GUIDANCE_SCALE, self.get_guidance_scale(), scale))
+        self.__logger.info(
+            "{} changed from {} to {}".format(
+                KEY_GUIDANCE_SCALE, self.get_guidance_scale(), scale
+            )
+        )
         self.__config[KEY_GUIDANCE_SCALE] = scale
         return self
 
@@ -65,7 +76,9 @@ class Config:
         return int(self.__config.get(KEY_HEIGHT, VALUE_HEIGHT_DEFAULT))
 
     def set_height(self, value: int):
-        self.__logger.info("{} changed from {} to {}".format(KEY_HEIGHT, self.get_height(), value))
+        self.__logger.info(
+            "{} changed from {} to {}".format(KEY_HEIGHT, self.get_height(), value)
+        )
         self.__config[KEY_HEIGHT] = value
         return self
 
@@ -73,7 +86,9 @@ class Config:
         return self.__config.get(KEY_PREVIEW, VALUE_PREVIEW_DEFAULT)
 
     def set_preview(self, boolean: bool):
-        self.__logger.info("{} changed from {} to {}".format(KEY_PREVIEW, self.get_preview(), boolean))
+        self.__logger.info(
+            "{} changed from {} to {}".format(KEY_PREVIEW, self.get_preview(), boolean)
+        )
         self.__config[KEY_PREVIEW] = boolean
         return self
 
@@ -83,7 +98,11 @@ class Config:
     def set_scheduler(self, scheduler: str):
         if not scheduler:
             scheduler = VALUE_SCHEDULER_DEFAULT
-        self.__logger.info("{} changed from {} to {}".format(KEY_SCHEDULER, self.get_scheduler(), scheduler))
+        self.__logger.info(
+            "{} changed from {} to {}".format(
+                KEY_SCHEDULER, self.get_scheduler(), scheduler
+            )
+        )
         self.__config[KEY_SCHEDULER] = scheduler
         return self
 
@@ -95,7 +114,9 @@ class Config:
         return seed
 
     def set_seed(self, seed: int):
-        self.__logger.info("{} changed from {} to {}".format(KEY_SEED, self.get_seed(), seed))
+        self.__logger.info(
+            "{} changed from {} to {}".format(KEY_SEED, self.get_seed(), seed)
+        )
         self.__config[KEY_SEED] = seed
         return self
 
@@ -103,7 +124,9 @@ class Config:
         return int(self.__config.get(KEY_STEPS, VALUE_STEPS_DEFAULT))
 
     def set_steps(self, steps: int):
-        self.__logger.info("{} changed from {} to {}".format(KEY_STEPS, self.get_steps(), steps))
+        self.__logger.info(
+            "{} changed from {} to {}".format(KEY_STEPS, self.get_steps(), steps)
+        )
         self.__config[KEY_STEPS] = steps
         return self
 
@@ -111,6 +134,8 @@ class Config:
         return int(self.__config.get(KEY_WIDTH, VALUE_WIDTH_DEFAULT))
 
     def set_width(self, value: int):
-        self.__logger.info("{} changed from {} to {}".format(KEY_WIDTH, self.get_width(), value))
+        self.__logger.info(
+            "{} changed from {} to {}".format(KEY_WIDTH, self.get_width(), value)
+        )
         self.__config[KEY_WIDTH] = value
         return self

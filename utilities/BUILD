@@ -74,6 +74,20 @@ py_library(
 )
 
 py_library(
+    name="img2img",
+    srcs=["img2img.py"],
+    deps=[
+        ":constants",
+        ":config",
+        ":logger",
+        ":images",
+        ":memory",
+        ":model",
+        ":times",
+    ],
+)
+
+py_library(
     name="times",
     srcs=["times.py"],
 )
