@@ -62,7 +62,7 @@ class Img2Img:
         if isinstance(reference_image, str):
             reference_image = (
                 base64_to_image(reference_image)
-                .thumbnail(config.get_width(), config.get_height())
+                .thumbnail((config.get_width(), config.get_height()))
                 .convert("RGB")
             )
 
