@@ -146,6 +146,8 @@
                                             <div class="card-body">
                                                 <ul class="list-group">
                                                     <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                        id="img2ImgJobUUID"></li>
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
                                                         id="img2ImgStatus"></li>
                                                     <li class="list-group-item d-flex justify-content-between align-items-center"
                                                         id="img2ImgSeed"></li>
@@ -166,6 +168,8 @@
                                     </div>
                                     <div class="card-body">
                                         <ul class="list-group">
+                                            <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                id="txt2ImgJobUUID"></li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center"
                                                 id="txt2ImgStatus"></li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center"
@@ -413,7 +417,7 @@
                     success: function (response) {
                         console.log(response);
                         if (response.uuid) {
-                            $('#jobuuid').val(response.uuid);
+                            $('#txt2ImgJobUUID').val(response.uuid);
                         }
                         $('#txt2ImgStatus').html('submitting new job..');
                         waitForImage(apikeyVal, response.uuid);
@@ -524,7 +528,7 @@
                     success: function (response) {
                         console.log(response);
                         if (response.uuid) {
-                            $('#jobuuid').val(response.uuid);
+                            $('#img2ImgJobUUID').val(response.uuid);
                         }
                         $('#img2ImgStatus').html('submitting new job..');
                         waitForImage(apikeyVal, response.uuid);
