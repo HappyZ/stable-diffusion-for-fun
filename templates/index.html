@@ -93,7 +93,7 @@
                             <div class="card-header">
                                 <ul class="nav nav-pills card-header-pills">
                                     <li class="nav-item">
-                                        <a class="nav-link active" href="#card-txt">Text-to-Image</a>
+                                        <a class="nav-link" href="#card-txt">Text-to-Image</a>
                                     </li>
                                     <li class="nav-item">
                                         <a class="nav-link" href="#card-img">Image-to-Image</a>
@@ -159,7 +159,7 @@
                             <div class="card-body card-specific" id="card-inpainting" style="display:none">
                                 TBD
                             </div>
-                            <div class="card-body card-specific" id="card-txt">
+                            <div class="card-body card-specific" id="card-txt" style="display:none">
                                 <div class="card">
                                     <div class="card-header">
                                         Result
@@ -261,6 +261,20 @@
                 }
             });
 
+            $('input').each(function () {
+                var input = $(this);
+                var key = input.attr('id');
+                var value = localStorage.getItem(key);
+
+                if (value) {
+                    input.val(value);
+                }
+
+                input.on('input', function () {
+                    localStorage.setItem(key, input.val());
+                });
+            });
+
             // Cache variable to store the selected image data
             var imageData = null;
 
@@ -297,6 +311,11 @@
                 input.click();
             });
 
+            var activeLink = localStorage.getItem('activeLink') || $('.nav-link:first').attr('href');
+
+            // Set the active link as the current active link
+            $('.nav-link[href="' + activeLink + '"]').addClass('active');
+            $(activeLink).show();
 
             $(".nav-link").click(function (e) {
                 e.preventDefault();
@@ -307,6 +326,8 @@
                 $(".nav-link").removeClass("active");
                 $(this).addClass("active");
                 $(target).show();
+
+                localStorage.setItem('activeLink', target);
             });
 
             $('#newTxt2ImgJob').click(function (e) {
