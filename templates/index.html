@@ -429,6 +429,14 @@
                 if (isNaN(stepsVal)) {
                     stepsVal = 50;
                 }
+                var widthVal = parseInt($('#inputWidth').val());
+                if (isNaN(widthVal)) {
+                    widthVal = 512;
+                }
+                var heightVal = parseInt($('#inputHeight').val());
+                if (isNaN(heightVal)) {
+                    heightVal = 512;
+                }
                 var strengthVal = parseInt($('#inputStrength').val());
                 if (isNaN(strengthVal)) {
                     strengthVal = 0.5;
@@ -449,6 +457,25 @@
                     return;
                 }
 
+                if (widthVal < 8 || widthVal > 960) {
+                    alert("width must be between 8 and 960!");
+                    return;
+                }
+
+                if (widthVal % 8 != 0) {
+                    alert("width must be divisible by 8!");
+                    return;
+                }
+
+                if (heightVal < 8 || heightVal > 960) {
+                    alert("height must be between 8 and 960!");
+                    return;
+                }
+
+                if (heightVal % 8 != 0) {
+                    alert("height must be divisible by 8!");
+                    return;
+                }
                 if (stepsVal > 200 || stepsVal < 1) {
                     alert("steps value must be between 1 and 200!");
                     return;
@@ -467,6 +494,8 @@
                         'prompt': promptVal,
                         'seed': seedVal,
                         'steps': stepsVal,
+                        'width': widthVal,
+                        'height': heightVal,
                         'guidance_scale': guidanceScaleVal,
                         'strength': strengthVal,
                         'neg_prompt': negPromptVal
