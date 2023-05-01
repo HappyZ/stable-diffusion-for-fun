@@ -60,11 +60,8 @@ class Img2Img:
         self.__logger.info("current seed: {}".format(seed))
 
         if isinstance(reference_image, str):
-            reference_image = (
-                base64_to_image(reference_image)
-                .thumbnail((config.get_width(), config.get_height()))
-                .convert("RGB")
-            )
+            reference_image = base64_to_image(reference_image).convert("RGB")
+            reference_image.thumbnail((config.get_width(), config.get_height()))
 
         result = self.model.img2img_pipeline(
             prompt=prompt,
