@@ -44,7 +44,7 @@ from utilities.img2img import Img2Img
 
 
 app = Flask(__name__)
-fast_web_debugging = False
+app.config['TESTING']  = False
 memory_lock = Lock()
 event_termination = Event()
 logger = Logger(name=LOGGER_NAME)
@@ -270,9 +270,9 @@ def backend(event_termination):
 
 
 def main():
-    if fast_web_debugging:
+    if app.testing:
         try:
-            app.run(host="0.0.0.0")
+            app.run(host="0.0.0.0", port="5000")
         except KeyboardInterrupt:
             pass
         return
@@ -281,7 +281,7 @@ def main():
     # ugly solution for now
     # TODO: use a database to track instead of internal memory
     try:
-        app.run(host="0.0.0.0")
+        app.run(host="0.0.0.0", port="8888")
         thread.join()
     except KeyboardInterrupt:
         event_termination.set()

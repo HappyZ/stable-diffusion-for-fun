@@ -76,12 +76,22 @@
                             <input type="number" class="form-control" id="inputHeight" placeholder="512" min="1"
                                 max="1024">
                         </div>
-                        <button id="newJob" type="submit" class="btn btn-primary">Let's Go!</button>
+                        <div class="form-row">
+                            <label for="guidanceScale">Guidance Scale</label>
+                            <input type="number" class="form-control" id="inputGuidanceScale"
+                                aria-describedby="inputGuidanceScaleHelp" placeholder="25" min="1" max="30">
+                            <div id="inputGuidanceScaleHelp" class="form-text">How much guidance to follow from
+                                description. 20 strictly follow prompt, 7 creative/artistic.
+                            </div>
+                        </div>
+                        <div class="row">
+                            <button id="newTxt2ImgJob" class="btn btn-primary">Let's Go!</button>
+                        </div>
                     </div>
                     <div class="col-md-9">
                         <div class="card mb-3">
                             <div class="card-header">
-                                <ul class="nav nav-tabs card-header-tabs">
+                                <ul class="nav nav-pills card-header-pills">
                                     <li class="nav-item">
                                         <a class="nav-link active" href="#card-txt">Text-to-Image</a>
                                     </li>
@@ -94,7 +104,57 @@
                                 </ul>
                             </div>
                             <div class="card-body card-specific" id="card-img" style="display:none">
-                                img
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                Reference Image
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <button id="copy-txt-to-img" class="btn btn-primary mb-3">Copy from
+                                                        Txt-to-Image</button>
+                                                    <button id="copy-last-img" class="btn btn-primary mb-3">Copy from
+                                                        Last
+                                                        Image
+                                                        Result</button>
+                                                    <button id="upload-img" class="btn btn-primary mb-3">Upload
+                                                        Image</button>
+                                                </div>
+                                                <div class="form-row">
+                                                    <label for="strength">Strength</label>
+                                                    <input type="number" class="form-control" id="inputStrength"
+                                                        aria-describedby="inputStrengthHelp" placeholder="0.5" min="0"
+                                                        max="1">
+                                                    <div id="inputStrengthHelp" class="form-text">How semantically
+                                                        consistent with the origional image.
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <button id="newImg2ImgJob" class="btn btn-primary mb-3">Let's Go
+                                                        with Image Below!</button>
+                                                </div>
+                                            </div>
+                                            <img class="card-img-bottom" id="reference-img">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                Result
+                                            </div>
+                                            <div class="card-body">
+                                                <ul class="list-group">
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                        id="img2ImgStatus"></li>
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                        id="img2ImgSeed"></li>
+                                                </ul>
+                                            </div>
+                                            <img class="card-img-bottom" id="img2ImgImg">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="card-body card-specific" id="card-inpainting" style="display:none">
                                 TBD
@@ -107,12 +167,12 @@
                                     <div class="card-body">
                                         <ul class="list-group">
                                             <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                id="resultStatus"></li>
+                                                id="txt2ImgStatus"></li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                id="resultSeed"></li>
+                                                id="txt2ImgSeed"></li>
                                         </ul>
                                     </div>
-                                    <img class="card-img-bottom" id="newJobImg">
+                                    <img class="card-img-bottom" id="txt2ImgImg">
                                 </div>
                             </div>
                         </div>
@@ -153,22 +213,34 @@
                 success: function (response) {
                     console.log(response);
                     if (response.jobs.length == 1) {
-                        $('#resultStatus').html(response.jobs[0].status)
-                        $('#resultSeed').html("seed: " + response.jobs[0].seed)
-                        if (response.jobs[0].status == "done") {
-                            $('#newJobImg').attr('src', response.jobs[0].img);
-                            return;
-                        }
-                        if (response.jobs[0].status == "failed") {
-                            return;
+                        if (response.jobs[0].type == 'txt') {
+                            $('#txt2ImgStatus').html(response.jobs[0].status);
+                            $('#txt2ImgSeed').html("seed: " + response.jobs[0].seed);
+                            if (response.jobs[0].status == "done") {
+                                $('#txt2ImgImg').attr('src', response.jobs[0].img);
+                                return;
+                            }
+                            if (response.jobs[0].status == "failed") {
+                                return;
+                            }
+                        } else if (response.jobs[0].type == 'img') {
+                            $('#img2ImgStatus').html(response.jobs[0].status);
+                            $('#img2ImgSeed').html("seed: " + response.jobs[0].seed);
+                            if (response.jobs[0].status == "done") {
+                                $('#img2ImgImg').attr('src', response.jobs[0].img);
+                                return;
+                            }
+                            if (response.jobs[0].status == "failed") {
+                                return;
+                            }
                         }
                     }
-                    setTimeout(function () { waitForImage(apikeyVal, uuidValue); }, 1000);  // refresh every second
+                    setTimeout(function () { waitForImage(apikeyVal, uuidValue); }, 1500);  // refresh every second
                 },
                 error: function (xhr, status, error) {
                     // Handle error response
                     console.log(xhr.responseText);
-                    $('#resultStatus').html('failed');
+                    $('#txt2ImgStatus').html('failed');
                 }
             });
         }
@@ -189,6 +261,43 @@
                 }
             });
 
+            // Cache variable to store the selected image data
+            var imageData = null;
+
+            $("#copy-txt-to-img").click(function () {
+                data = $("#txt2ImgImg").attr("src");
+                if (data == null || data == "") {
+                    alert("nothing found from txt-to-img result");
+                    return;
+                }
+                imageData = data;
+                $("#reference-img").attr("src", imageData);
+            });
+
+            $("#copy-last-img").click(function () {
+                data = $("#img2ImgImg").attr("src");
+                if (data == null || data == "") {
+                    alert("nothing found from img-to-img result");
+                    return;
+                }
+                imageData = data;
+                $("#reference-img").attr("src", imageData);
+            });
+
+            $("#upload-img").click(function () {
+                var input = $("<input type='file' accept='image/*'>");
+                input.on("change", function () {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        imageData = e.target.result;
+                        $("#reference-img").attr("src", imageData);
+                    };
+                    reader.readAsDataURL(input[0].files[0]);
+                });
+                input.click();
+            });
+
+
             $(".nav-link").click(function (e) {
                 e.preventDefault();
                 var target = $(this).attr("href"); // get the href value of the clicked link
@@ -200,7 +309,7 @@
                 $(target).show();
             });
 
-            $('#newJob').click(function (e) {
+            $('#newTxt2ImgJob').click(function (e) {
                 e.preventDefault(); // Prevent the default form submission
 
                 // Gather input field values
@@ -210,6 +319,10 @@
                 var seedVal = $('#inputSeed').val();
                 if (seedVal == "0" || seedVal == "") {
                     seedVal = "0";
+                }
+                var guidanceScaleVal = parseFloat($('#inputGuidanceScale').val())
+                if (isNaN(guidanceScaleVal)) {
+                    guidanceScaleVal = 25.0;
                 }
                 var stepsVal = parseInt($('#inputSteps').val());
                 if (isNaN(stepsVal)) {
@@ -226,6 +339,11 @@
 
                 if (promptVal == "") {
                     alert("missing prompt!");
+                    return;
+                }
+
+                if (guidanceScaleVal < 1 || guidanceScaleVal > 30) {
+                    alert("guidance scale must be between 1 and 30");
                     return;
                 }
 
@@ -268,6 +386,7 @@
                         'steps': stepsVal,
                         'width': widthVal,
                         'height': heightVal,
+                        'guidance_scale': guidanceScaleVal,
                         'neg_prompt': negPromptVal
                     }),
                     success: function (response) {
@@ -275,13 +394,95 @@
                         if (response.uuid) {
                             $('#jobuuid').val(response.uuid);
                         }
-                        $('#resultStatus').html('submitting new job..');
+                        $('#txt2ImgStatus').html('submitting new job..');
                         waitForImage(apikeyVal, response.uuid);
                     },
                     error: function (xhr, status, error) {
                         // Handle error response
                         console.log(xhr.responseText);
-                        $('#resultStatus').html('failed');
+                        $('#txt2ImgStatus').html('failed');
+                    }
+                });
+            });
+
+            $('#newImg2ImgJob').click(function (e) {
+                e.preventDefault(); // Prevent the default form submission
+
+                if (imageData == null) {
+                    alert("No image cached")
+                    return;
+                }
+
+                // Gather input field values
+                var apikeyVal = $('#apiKey').val();
+                var promptVal = $('#prompt').val();
+                var negPromptVal = $('#negPrompt').val();
+                var seedVal = $('#inputSeed').val();
+                if (seedVal == "0" || seedVal == "") {
+                    seedVal = "0";
+                }
+                var guidanceScaleVal = parseFloat($('#inputGuidanceScale').val())
+                if (isNaN(guidanceScaleVal)) {
+                    guidanceScaleVal = 25.0;
+                }
+                var stepsVal = parseInt($('#inputSteps').val());
+                if (isNaN(stepsVal)) {
+                    stepsVal = 50;
+                }
+                var strengthVal = parseInt($('#inputStrength').val());
+                if (isNaN(strengthVal)) {
+                    strengthVal = 0.5;
+                }
+
+                if (promptVal == "") {
+                    alert("missing prompt!");
+                    return;
+                }
+
+                if (guidanceScaleVal < 1 || guidanceScaleVal > 30) {
+                    alert("guidance scale must be between 1 and 30");
+                    return;
+                }
+
+                if (strengthVal < 0 || strengthVal > 1) {
+                    alert("strength must be between 0 and 1");
+                    return;
+                }
+
+                if (stepsVal > 200 || stepsVal < 1) {
+                    alert("steps value must be between 1 and 200!");
+                    return;
+                }
+
+                // Send POST request using Ajax
+                $.ajax({
+                    type: 'POST',
+                    url: '/add_job',
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    data: JSON.stringify({
+                        'api_key': apikeyVal,
+                        'type': 'img',
+                        'ref_img': imageData,
+                        'prompt': promptVal,
+                        'seed': seedVal,
+                        'steps': stepsVal,
+                        'guidance_scale': guidanceScaleVal,
+                        'strength': strengthVal,
+                        'neg_prompt': negPromptVal
+                    }),
+                    success: function (response) {
+                        console.log(response);
+                        if (response.uuid) {
+                            $('#jobuuid').val(response.uuid);
+                        }
+                        $('#img2ImgStatus').html('submitting new job..');
+                        waitForImage(apikeyVal, response.uuid);
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle error response
+                        console.log(xhr.responseText);
+                        $('#img2ImgStatus').html('failed');
                     }
                 });
             });

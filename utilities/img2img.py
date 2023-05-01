@@ -13,6 +13,7 @@ from utilities.memory import empty_memory_cache
 from utilities.model import Model
 from utilities.times import get_epoch_now
 from utilities.images import image_to_base64
+from utilities.images import base64_to_image
 
 
 class Img2Img:
@@ -59,13 +60,14 @@ class Img2Img:
         self.__logger.info("current seed: {}".format(seed))
 
         if isinstance(reference_image, str):
-            reference_image
+            reference_image = base64_to_image(reference_image).convert('RGB')
 
-        result = self.model.txt2img_pipeline(
+        result = self.model.img2img_pipeline(
             prompt=prompt,
             image=reference_image,
             negative_prompt=negative_prompt,
             guidance_scale=config.get_guidance_scale(),
+            strength=config.get_strength(),
             num_inference_steps=config.get_steps(),
             generator=generator,
             callback=None,

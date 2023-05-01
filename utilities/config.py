@@ -8,6 +8,8 @@ from utilities.constants import KEY_GUIDANCE_SCALE
 from utilities.constants import VALUE_GUIDANCE_SCALE_DEFAULT
 from utilities.constants import KEY_HEIGHT
 from utilities.constants import VALUE_HEIGHT_DEFAULT
+from utilities.constants import KEY_STRENGTH
+from utilities.constants import VALUE_STRENGTH_DEFAULT
 from utilities.constants import KEY_PREVIEW
 from utilities.constants import VALUE_PREVIEW_DEFAULT
 from utilities.constants import KEY_SCHEDULER
@@ -138,4 +140,16 @@ class Config:
             "{} changed from {} to {}".format(KEY_WIDTH, self.get_width(), value)
         )
         self.__config[KEY_WIDTH] = value
+        return self
+
+    def get_strength(self) -> float:
+        return float(self.__config.get(KEY_STRENGTH, VALUE_STRENGTH_DEFAULT))
+
+    def set_strength(self, strength: float):
+        self.__logger.info(
+            "{} changed from {} to {}".format(
+                KEY_STRENGTH, self.get_strength(), strength
+            )
+        )
+        self.__config[KEY_STRENGTH] = strength
         return self
