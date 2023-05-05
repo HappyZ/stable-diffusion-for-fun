@@ -213,7 +213,7 @@
                 url: '/get_jobs',
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json',
-                data: JSON.stringify({ 'api_key': apikeyVal, 'uuid': uuidValue }),
+                data: JSON.stringify({ 'apikey': apikeyVal, 'uuid': uuidValue }),
                 success: function (response) {
                     console.log(response);
                     if (response.jobs.length == 1) {
@@ -404,7 +404,7 @@
                     contentType: 'application/json; charset=utf-8',
                     dataType: 'json',
                     data: JSON.stringify({
-                        'api_key': apikeyVal,
+                        'apikey': apikeyVal,
                         'type': 'txt',
                         'prompt': promptVal,
                         'seed': seedVal,
@@ -513,7 +513,7 @@
                     contentType: 'application/json; charset=utf-8',
                     dataType: 'json',
                     data: JSON.stringify({
-                        'api_key': apikeyVal,
+                        'apikey': apikeyVal,
                         'type': 'img',
                         'ref_img': imageData,
                         'prompt': promptVal,

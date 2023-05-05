@@ -8,6 +8,7 @@ par_binary(
     srcs=["main.py"],
     deps=[
         "//utilities:constants",
+        "//utilities:database",
         "//utilities:logger",
         "//utilities:model",
         "//utilities:text2img",

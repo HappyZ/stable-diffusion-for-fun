@@ -10,8 +10,6 @@ from utilities.constants import KEY_HEIGHT
 from utilities.constants import VALUE_HEIGHT_DEFAULT
 from utilities.constants import KEY_STRENGTH
 from utilities.constants import VALUE_STRENGTH_DEFAULT
-from utilities.constants import KEY_PREVIEW
-from utilities.constants import VALUE_PREVIEW_DEFAULT
 from utilities.constants import KEY_SCHEDULER
 from utilities.constants import VALUE_SCHEDULER_DEFAULT
 from utilities.constants import VALUE_SCHEDULER_DDIM
@@ -82,16 +80,6 @@ class Config:
             "{} changed from {} to {}".format(KEY_HEIGHT, self.get_height(), value)
         )
         self.__config[KEY_HEIGHT] = value
-        return self
-
-    def get_preview(self) -> bool:
-        return self.__config.get(KEY_PREVIEW, VALUE_PREVIEW_DEFAULT)
-
-    def set_preview(self, boolean: bool):
-        self.__logger.info(
-            "{} changed from {} to {}".format(KEY_PREVIEW, self.get_preview(), boolean)
-        )
-        self.__config[KEY_PREVIEW] = boolean
         return self
 
     def get_scheduler(self) -> str:

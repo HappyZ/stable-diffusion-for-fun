@@ -7,71 +7,81 @@ LOGGER_NAME_IMG2IMG = "img2img"
 MAX_JOB_NUMBER = 10
 
 
-KEY_OUTPUT_FOLDER = "OUTFOLDER"
+
+KEY_OUTPUT_FOLDER = "outfolder"
 VALUE_OUTPUT_FOLDER_DEFAULT = ""
 
-KEY_SEED = "SEED"
-VALUE_SEED_DEFAULT = 0
+#
+# Database
+#
+HISTORY_TABLE_NAME = "history"
+USERS_TABLE_NAME = "users"
 
-KEY_WIDTH = "WIDTH"
-VALUE_WIDTH_DEFAULT = 512
+#
+# REST API Keys
+#
 
-KEY_HEIGHT = "HEIGHT"
-VALUE_HEIGHT_DEFAULT = 512
+# - input and output
+APIKEY = "apikey"
 
-KEY_GUIDANCE_SCALE = "GUIDANCE_SCALE"
-VALUE_GUIDANCE_SCALE_DEFAULT = 25.0
+KEY_JOB_TYPE = "type"
+VALUE_JOB_TXT2IMG = "txt"  # default value for KEY_JOB_TYPE
+VALUE_JOB_IMG2IMG = "img"
+REFERENCE_IMG = "ref_img"
+VALUE_JOB_INPAINTING = "inpaint"
 
-KEY_STRENGTH = "STRENGTH"
-VALUE_STRENGTH_DEFAULT = 0.5
-
-KEY_STEPS = "STEPS"
-VALUE_STEPS_DEFAULT = 50
-
-KEY_SCHEDULER = "SCHEDULER"
-VALUE_SCHEDULER_DEFAULT = "Default"
+KEY_PROMPT = "prompt"
+KEY_NEG_PROMPT = "neg_prompt"
+KEY_SEED = "seed"
+VALUE_SEED_DEFAULT = 0  # default value for KEY_SEED
+KEY_WIDTH = "width"
+VALUE_WIDTH_DEFAULT = 512  # default value for KEY_WIDTH
+KEY_HEIGHT = "height"
+VALUE_HEIGHT_DEFAULT = 512  # default value for KEY_HEIGHT
+KEY_GUIDANCE_SCALE = "guidance_scale"
+VALUE_GUIDANCE_SCALE_DEFAULT = 25.0  # default value for KEY_GUIDANCE_SCALE
+KEY_STEPS = "steps"
+VALUE_STEPS_DEFAULT = 50  # default value for KEY_STEPS
+KEY_SCHEDULER = "scheduler"
+VALUE_SCHEDULER_DEFAULT = "Default"  # default value for KEY_SCHEDULER
 VALUE_SCHEDULER_DPM_SOLVER_MULTISTEP = "DPMSolverMultistepScheduler"
 VALUE_SCHEDULER_LMS_DISCRETE = "LMSDiscreteScheduler"
 VALUE_SCHEDULER_EULER_DISCRETE = "EulerDiscreteScheduler"
 VALUE_SCHEDULER_PNDM = "PNDMScheduler"
 VALUE_SCHEDULER_DDIM = "DDIMScheduler"
+KEY_STRENGTH = "strength"
+VALUE_STRENGTH_DEFAULT = 0.5  # default value for KEY_STRENGTH
 
-KEY_PROMPT = "PROMPT"
-KEY_NEG_PROMPT = "NEG_PROMPT"
+REQUIRED_KEYS = [
+    APIKEY,  # str
+    KEY_PROMPT,  # str
+    KEY_JOB_TYPE,  # str
+]
+OPTIONAL_KEYS = [
+    KEY_NEG_PROMPT,  # str
+    KEY_SEED,  # str
+    KEY_WIDTH,  # int
+    KEY_HEIGHT,  # int
+    KEY_GUIDANCE_SCALE,  # float
+    KEY_STEPS,  # int
+    KEY_SCHEDULER,  # str
+    KEY_STRENGTH,  # float
+    REFERENCE_IMG,  # str (base64)
+]
 
-KEY_PREVIEW = "PREVIEW"
-VALUE_PREVIEW_DEFAULT = True
-
-# REST API Keys
-API_KEY = "api_key"
-API_KEY_FOR_DEMO = "demo"
+# - output only
 UUID = "uuid"
-
 BASE64IMAGE = "img"
+KEY_PRIORITY = "priority"
 KEY_JOB_STATUS = "status"
-VALUE_JOB_PENDING = "pending"
+VALUE_JOB_PENDING = "pending"  # default value for KEY_JOB_STATUS
 VALUE_JOB_RUNNING = "running"
 VALUE_JOB_DONE = "done"
 VALUE_JOB_FAILED = "failed"
-KEY_JOB_TYPE = "type"
-VALUE_JOB_TXT2IMG = "txt"
-VALUE_JOB_IMG2IMG = "img"
-VALUE_JOB_INPAINTING = "inpaint"
-REFERENCE_IMG = "ref_img"
 
-REQUIRED_KEYS = [
-    API_KEY.lower(),
-    KEY_PROMPT.lower(),
-    KEY_JOB_TYPE.lower(),
-]
-OPTIONAL_KEYS = [
-    KEY_NEG_PROMPT.lower(),
-    KEY_SEED.lower(),
-    KEY_WIDTH.lower(),
-    KEY_HEIGHT.lower(),
-    KEY_GUIDANCE_SCALE.lower(),
-    KEY_STEPS.lower(),
-    KEY_SCHEDULER.lower(),
-    KEY_STRENGTH.lower(),
-    REFERENCE_IMG.lower(),
+OUTPUT_ONLY_KEYS = [
+    UUID,  # str
+    KEY_PRIORITY,  # int
+    BASE64IMAGE,  # str (base64)
+    KEY_JOB_STATUS,  # str
 ]

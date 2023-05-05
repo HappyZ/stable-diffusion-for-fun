@@ -1,3 +1,4 @@
+import argparse
 import copy
 import tempfile
 import pkgutil
@@ -10,8 +11,7 @@ from threading import Event
 from threading import Thread
 from threading import Lock
 
-from utilities.constants import API_KEY
-from utilities.constants import API_KEY_FOR_DEMO
+from utilities.constants import APIKEY
 from utilities.constants import KEY_APP
 from utilities.constants import KEY_JOB_STATUS
 from utilities.constants import KEY_JOB_TYPE
@@ -33,6 +33,7 @@ from utilities.constants import VALUE_JOB_PENDING
 from utilities.constants import VALUE_JOB_RUNNING
 from utilities.constants import VALUE_JOB_DONE
 from utilities.constants import VALUE_JOB_FAILED
+from utilities.database import Database
 from utilities.envvar import get_env_var_with_default
 from utilities.envvar import get_env_var
 from utilities.times import wait_for_seconds
@@ -44,10 +45,10 @@ from utilities.img2img import Img2Img
 
 
 app = Flask(__name__)
-app.config['TESTING']  = False
 memory_lock = Lock()
 event_termination = Event()
 logger = Logger(name=LOGGER_NAME)
+database = Database(logger)
 use_gpu = True
 
 local_job_stack = []
@@ -57,13 +58,14 @@ local_completed_jobs = []
 @app.route("/add_job", methods=["POST"])
 def add_job():
     req = request.get_json()
-    if API_KEY not in req:
+
+    if APIKEY not in req:
+        logger.error(f"{APIKEY} not present in {req}")
         return "", 401
-    if get_env_var_with_default(KEY_APP, VALUE_APP) == VALUE_APP:
-        if req[API_KEY] != API_KEY_FOR_DEMO:
-            return "", 401
-    else:
-        # TODO: add logic to validate app key with a particular user
+    with memory_lock:
+        user = database.validate_user(req[APIKEY])
+    if not user:
+        logger.error(f"user not found with {req[APIKEY]}")
         return "", 401
 
     for key in req.keys():
@@ -76,71 +78,58 @@ def add_job():
     if req[KEY_JOB_TYPE] == VALUE_JOB_IMG2IMG and REFERENCE_IMG not in req:
         return jsonify({"msg": "missing reference image"}), 404
 
-    if len(local_job_stack) > MAX_JOB_NUMBER:
-        return jsonify({"msg": "too many jobs in queue, please wait"}), 500
+    if database.count_all_pending_jobs(req[APIKEY]) > MAX_JOB_NUMBER:
+        return (
+            jsonify({"msg": "too many jobs in queue, please wait or cancel some"}),
+            500,
+        )
 
-    req[UUID] = str(uuid.uuid4())
-    logger.info("adding a new job with uuid {}..".format(req[UUID]))
-
-    req[KEY_JOB_STATUS] = VALUE_JOB_PENDING
-    req["position"] = len(local_job_stack) + 1
+    job_uuid = str(uuid.uuid4())
+    logger.info("adding a new job with uuid {}..".format(job_uuid))
 
     with memory_lock:
-        local_job_stack.append(req)
+        database.insert_new_job(req, job_uuid=job_uuid)
 
-    return jsonify({"msg": "", "position": req["position"], UUID: req[UUID]})
+    return jsonify({"msg": "", UUID: job_uuid})
 
 
 @app.route("/cancel_job", methods=["POST"])
 def cancel_job():
     req = request.get_json()
-    if API_KEY not in req:
+    if APIKEY not in req:
         return "", 401
-    if get_env_var_with_default(KEY_APP, VALUE_APP) == VALUE_APP:
-        if req[API_KEY] != API_KEY_FOR_DEMO:
-            return "", 401
-    else:
-        # TODO: add logic to validate app key with a particular user
+    with memory_lock:
+        user = database.validate_user(req[APIKEY])
+    if not user:
         return "", 401
 
     if UUID not in req:
         return jsonify({"msg": "missing uuid"}), 404
 
-    logger.info("removing job with uuid {}..".format(req[UUID]))
+    logger.info("cancelling job with uuid {}..".format(req[UUID]))
 
-    cancel_job_position = None
     with memory_lock:
-        for job_position in range(len(local_job_stack)):
-            if local_job_stack[job_position][UUID] == req[UUID]:
-                cancel_job_position = job_position
-                break
-        logger.info("foud {}".format(cancel_job_position))
-        if cancel_job_position is not None:
-            if local_job_stack[cancel_job_position][API_KEY] != req[API_KEY]:
-                return "", 401
-            if (
-                local_job_stack[cancel_job_position][KEY_JOB_STATUS]
-                == VALUE_JOB_RUNNING
-            ):
-                logger.info(
-                    "job at {} with uuid {} is running and cannot be cancelled".format(
-                        cancel_job_position, req[UUID]
+        result = database.cancel_job(job_uuid=req[UUID])
+
+    if result:
+        msg = "job with uuid {} removed".format(req[UUID])
+        return jsonify({"msg": msg})
+
+    with memory_lock:
+        jobs = database.get_jobs(job_uuid=req[UUID])
+
+    if jobs:
+        return (
+            jsonify(
+                {
+                    "msg": "job {} is not in pending state, unable to cancel".format(
+                        req[UUID]
                     )
-                )
-                return (
-                    jsonify(
-                        {
-                            "msg": "job {} is already running, unable to cancel".format(
-                                req[UUID]
-                            )
-                        }
-                    ),
-                    405,
-                )
-            del local_job_stack[cancel_job_position]
-            msg = "job with uuid {} removed".format(req[UUID])
-            logger.info(msg)
-            return jsonify({"msg": msg})
+                }
+            ),
+            405,
+        )
+
     return (
         jsonify({"msg": "unable to find the job with uuid {}".format(req[UUID])}),
         404,
@@ -150,37 +139,16 @@ def cancel_job():
 @app.route("/get_jobs", methods=["POST"])
 def get_jobs():
     req = request.get_json()
-    if API_KEY not in req:
+    if APIKEY not in req:
         return "", 401
-    if get_env_var_with_default(KEY_APP, VALUE_APP) == VALUE_APP:
-        if req[API_KEY] != API_KEY_FOR_DEMO:
-            return "", 401
-    else:
-        # TODO: add logic to validate app key with a particular user
-        return "", 401
-
-    jobs = []
-
-    all_job_stack = local_job_stack + local_completed_jobs
     with memory_lock:
-        for job_position in range(len(all_job_stack)):
-            # filter on API_KEY
-            if all_job_stack[job_position][API_KEY] != req[API_KEY]:
-                continue
-            # filter on UUID
-            if UUID in req and req[UUID] != all_job_stack[job_position][UUID]:
-                continue
-            job = copy.deepcopy(all_job_stack[job_position])
-            if job[KEY_JOB_STATUS] == VALUE_JOB_DONE:
-                del job["position"]
-            del job[API_KEY]
-            jobs.append(job)
+        user = database.validate_user(req[APIKEY])
+    if not user:
+        return "", 401
 
-    if len(jobs) == 0:
-        return (
-            jsonify({"msg": "found no jobs for api_key={}".format(req[API_KEY])}),
-            404,
-        )
+    with memory_lock:
+        jobs = database.get_jobs(job_uuid=req[UUID])
+
     return jsonify({"jobs": jobs})
 
 
@@ -213,7 +181,7 @@ def load_model(logger: Logger) -> Model:
     return model
 
 
-def backend(event_termination):
+def backend(event_termination, db):
     model = load_model(logger)
     text2img = Text2Img(model, logger=Logger(name=LOGGER_NAME_TXT2IMG))
     img2img = Img2Img(model, logger=Logger(name=LOGGER_NAME_IMG2IMG))
@@ -225,15 +193,20 @@ def backend(event_termination):
         wait_for_seconds(1)
 
         with memory_lock:
-            if len(local_job_stack) == 0:
-                continue
-            next_job = local_job_stack[0]
-            next_job[KEY_JOB_STATUS] = VALUE_JOB_RUNNING
+            pending_jobs = database.get_all_pending_jobs()
 
-            prompt = next_job[KEY_PROMPT.lower()]
-            negative_prompt = next_job.get(KEY_NEG_PROMPT.lower(), "")
+        if len(pending_jobs) == 0:
+            continue
 
-            config = Config().set_config(next_job)
+        next_job = pending_jobs[0]
+
+        with memory_lock:
+            database.update_job({KEY_JOB_STATUS: VALUE_JOB_RUNNING}, job_uuid=next_job[UUID])
+
+        prompt = next_job[KEY_PROMPT]
+        negative_prompt = next_job[KEY_NEG_PROMPT]
+
+        config = Config().set_config(next_job)
 
         try:
             if next_job[KEY_JOB_TYPE] == VALUE_JOB_TXT2IMG:
@@ -250,33 +223,35 @@ def backend(event_termination):
                 )
         except BaseException as e:
             logger.error("text2img.lunch error: {}".format(e))
-            local_job_stack.pop(0)
-            next_job[KEY_JOB_STATUS] = VALUE_JOB_FAILED
-            local_completed_jobs.append(next_job)
+            with memory_lock:
+                database.update_job(
+                    {KEY_JOB_STATUS: VALUE_JOB_FAILED}, job_uuid=next_job[UUID]
+                )
+            continue
 
         with memory_lock:
-            local_job_stack.pop(0)
-            next_job[KEY_JOB_STATUS] = VALUE_JOB_DONE
-            next_job.update(result_dict)
-            local_completed_jobs.append(next_job)
+            database.update_job({KEY_JOB_STATUS: VALUE_JOB_DONE}, job_uuid=next_job[UUID])
+            database.update_job(result_dict, job_uuid=next_job[UUID])
 
     logger.critical("stopped")
-    if len(local_job_stack) > 0:
-        logger.info(
-            "remaining {} jobs in stack: {}".format(
-                len(local_job_stack), local_job_stack
-            )
-        )
 
 
-def main():
-    if app.testing:
+def main(db_filepath, is_testing: bool = False):
+    database.connect(db_filepath)
+
+    if is_testing:
         try:
             app.run(host="0.0.0.0", port="5000")
         except KeyboardInterrupt:
             pass
         return
-    thread = Thread(target=backend, args=(event_termination,))
+    thread = Thread(
+        target=backend,
+        args=(
+            event_termination,
+            database,
+        ),
+    )
     thread.start()
     # ugly solution for now
     # TODO: use a database to track instead of internal memory
@@ -285,8 +260,24 @@ def main():
         thread.join()
     except KeyboardInterrupt:
         event_termination.set()
-        thread.join(1)
+
+    database.safe_disconnect()
+
+    thread.join(2)
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+
+    # Add an argument to set the 'testing' flag
+    parser.add_argument("--testing", action="store_true", help="Enable testing mode")
+
+    # Add an argument to set the path of the database file
+    parser.add_argument(
+        "--db", type=str, default="happysd.db", help="Path to SQLite database file"
+    )
+
+    args = parser.parse_args()
+    logger.info(args)
+
+    main(args.db, args.testing)

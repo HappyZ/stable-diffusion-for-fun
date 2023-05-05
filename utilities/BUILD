@@ -16,21 +16,29 @@ py_library(
     srcs=["constants.py"],
 )
 
+py_library(
+    name="database",
+    srcs=["database.py"],
+    deps=[
+        ":logger",
+    ],
+)
+
 
 py_library(
-  name = "envvar",
-  srcs = ["envvar.py"],
+    name="envvar",
+    srcs=["envvar.py"],
 )
 
 py_test(
-  name = "envvar_test",
-  srcs = ["envvar_test.py"],
-  deps = [":envvar"],
+    name="envvar_test",
+    srcs=["envvar_test.py"],
+    deps=[":envvar"],
 )
 
 py_library(
-  name = "images",
-  srcs = ["images.py"],
+    name="images",
+    srcs=["images.py"],
 )
 
 py_library(
