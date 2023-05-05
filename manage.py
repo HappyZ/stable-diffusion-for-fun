@@ -79,7 +79,7 @@ def show_users(c, username="", details=False):
             count = c.fetchone()[0]
             print(f"Username: {user[0]}, API Key: {user[1]}, Number of jobs: {count}")
             if details:
-                c.execute("SELECT * FROM history WHERE apikey=?", (user[1],))
+                c.execute("SELECT uuid, created_at, type, status, width, height, steps FROM history WHERE apikey=?", (user[1],))
                 result = c.fetchall()
                 print(result)
         else:
@@ -92,7 +92,7 @@ def show_users(c, username="", details=False):
             count = c.fetchone()[0]
             print(f"Username: {user[0]}, API Key: {user[1]}, Number of jobs: {count}")
             if details:
-                c.execute("SELECT * FROM history WHERE apikey=?", (user[1],))
+                c.execute("SELECT uuid, created_at, type, status, width, height, steps FROM history WHERE apikey=?", (user[1],))
                 result = c.fetchall()
                 print(result)
 

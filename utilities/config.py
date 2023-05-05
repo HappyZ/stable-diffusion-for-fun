@@ -43,7 +43,7 @@ class Config:
         for key in config:
             if key not in OPTIONAL_KEYS:
                 continue
-            self.__config[key.upper()] = config[key]
+            self.__config[key] = config[key]
         return self
 
     def get_output_folder(self) -> str:

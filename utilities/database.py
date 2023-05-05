@@ -154,7 +154,7 @@ class Database:
         columns = [UUID, KEY_JOB_STATUS] + REQUIRED_KEYS + OPTIONAL_KEYS
         for column in REQUIRED_KEYS + OPTIONAL_KEYS:
             values.append(job_dict.get(column, None))
-
+        
         query = f"INSERT INTO {HISTORY_TABLE_NAME} ({', '.join(columns)}) VALUES ({', '.join(['?' for _ in columns])})"
         self.__cursor.execute(query, tuple(values))
         self.__connect.commit()
