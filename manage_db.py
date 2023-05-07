@@ -1,6 +1,20 @@
 import argparse
 import sqlite3
+import fcntl
 import uuid
+
+
+# Function to acquire a lock on the database file
+def acquire_lock(lock_file):
+    lock_fd = open(lock_file, "w")
+    fcntl.flock(lock_fd, fcntl.LOCK_EX)
+
+
+# Function to release the lock on the database file
+def release_lock(lock_file):
+    lock_fd = open(lock_file, "w")
+    fcntl.flock(lock_fd, fcntl.LOCK_UN)
+    lock_fd.close()
 
 
 def create_table_users(c):
@@ -9,7 +23,9 @@ def create_table_users(c):
         """CREATE TABLE IF NOT EXISTS users
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   username TEXT UNIQUE,
-                  apikey TEXT)"""
+                  apikey TEXT,
+                  quota INT DEFAULT 50
+                 )"""
     )
 
 
@@ -39,6 +55,11 @@ def create_table_history(c):
                   lora_model TEXT
                  )"""
     )
+
+
+def create_or_update_table(c):
+    create_table_users(c)
+    create_table_history(c)
 
 
 def modify_table(c, table_name, operation, column_name=None, data_type=None):
@@ -82,6 +103,20 @@ def update_user(c, username, apikey):
         raise ValueError("username does not exist! create it first?")
 
 
+def update_quota(c, apikey, quota):
+    c.execute("SELECT username FROM users WHERE apikey=?", (apikey,))
+    result = c.fetchone()
+    if result is not None:
+        c.execute("UPDATE users SET quota=? WHERE apikey=?", (quota, apikey))
+
+
+def update_username(c, apikey, username):
+    c.execute("SELECT username FROM users WHERE apikey=?", (apikey,))
+    result = c.fetchone()
+    if result is not None:
+        c.execute("UPDATE users SET username=? WHERE apikey=?", (username, apikey))
+
+
 def delete_user(c, username):
     """Delete the user with the given username, or ignore the operation if the user does not exist"""
     c.execute(
@@ -111,7 +146,7 @@ def show_users(c, username="", details=False):
             print(f"Username: {user[0]}, API Key: {user[1]}, Number of jobs: {count}")
             if details:
                 c.execute(
-                    "SELECT uuid, created_at, type, status, width, height, steps FROM history WHERE apikey=?",
+                    "SELECT uuid, created_at, type, status, width, height, steps, prompt, neg_prompt FROM history WHERE apikey=?",
                     (user[1],),
                 )
                 rows = c.fetchall()
@@ -128,7 +163,7 @@ def show_users(c, username="", details=False):
             print(f"Username: {user[0]}, API Key: {user[1]}, Number of jobs: {count}")
             if details:
                 c.execute(
-                    "SELECT uuid, created_at, type, status, width, height, steps FROM history WHERE apikey=?",
+                    "SELECT uuid, created_at, type, status, width, height, steps, prompt, neg_prompt FROM history WHERE apikey=?",
                     (user[1],),
                 )
                 rows = c.fetchall()
@@ -136,10 +171,67 @@ def show_users(c, username="", details=False):
                     print(row)
 
 
+def manage(args):
+    # Path to the database file
+    db_path = "happysd.db"
+    # Path to the lock file
+    lock_file = "/tmp/happysd_db.lock"
+
+    # Connect to the database (creates a new file if it doesn't exist)
+    conn = sqlite3.connect(db_path)
+
+    # Acquire the lock
+    acquire_lock(lock_file)
+
+    try:
+        # Access the database
+        c = conn.cursor()
+
+        # Create the users and history tables if they don't exist
+        create_or_update_table(c)
+
+        # Perform the requested action
+        if args.action == "create":
+            create_user(c, args.username, args.apikey)
+        elif args.action == "update":
+            if args.update_type == "user":
+                update_user(c, args.username, args.apikey)
+            elif args.update_type == "table":
+                if args.table_action == "add":
+                    modify_table(
+                        c,
+                        args.table_name,
+                        args.table_action,
+                        args.column_name,
+                        args.column_type,
+                    )
+                elif args.table_action == "drop":
+                    modify_table(
+                        c, args.table_name, args.table_action, args.column_name
+                    )
+                elif args.table_action == "show":
+                    modify_table(c, args.table_name, args.table_action)
+        elif args.action == "delete":
+            if args.delete_type == "user":
+                delete_user(c, args.username)
+            elif args.delete_type == "job":
+                delete_job(c, args.job_id)
+        elif args.action == "list":
+            show_users(c, args.username, args.details)
+
+        # Commit the changes to the database
+        conn.commit()
+
+    finally:
+        # Release the lock
+        release_lock(lock_file)
+        conn.close()
+
+
 def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(dest="action")
+    subparsers = parser.add_subparsers(dest="action", required=True)
 
     # Sub-parser for the "create" action
     create_parser = subparsers.add_parser("create")
@@ -148,7 +240,7 @@ def main():
 
     # Sub-parser for the "update" action
     update_parser = subparsers.add_parser("update")
-    update_subparsers = update_parser.add_subparsers(dest="update_type")
+    update_subparsers = update_parser.add_subparsers(dest="update_type", required=True)
 
     # Sub-parser for updating a user
     update_user_parser = update_subparsers.add_parser("user")
@@ -157,7 +249,9 @@ def main():
 
     # Sub-parser for updating a table
     update_table_parser = update_subparsers.add_parser("table")
-    update_table_subparsers = update_table_parser.add_subparsers(dest="table_action")
+    update_table_subparsers = update_table_parser.add_subparsers(
+        dest="table_action", required=True
+    )
 
     # Sub-parser for adding a column to a table
     table_add_parser = update_table_subparsers.add_parser("add")
@@ -176,7 +270,7 @@ def main():
 
     # Sub-parser for the "delete" action
     delete_parser = subparsers.add_parser("delete")
-    delete_subparsers = delete_parser.add_subparsers(dest="delete_type")
+    delete_subparsers = delete_parser.add_subparsers(dest="delete_type", required=True)
     user_parser = delete_subparsers.add_parser("user")
     user_parser.add_argument("username")
     job_parser = delete_subparsers.add_parser("job")
@@ -189,48 +283,9 @@ def main():
         "--details", action="store_true", help="Showing more details"
     )
 
-    # Sub-parser for the "modify" action
-    modify_parser = subparsers.add_parser("modify")
-    modify_parser.add_argument("table")
-    modify_parser.add_argument("--add-column")
-    modify_parser.add_argument("--drop-column")
-
     args = parser.parse_args()
 
-    # Connect to the database (creates a new file if it doesn't exist)
-    conn = sqlite3.connect("happysd.db")
-    c = conn.cursor()
-
-    # Create the users and history tables if they don't exist
-    create_table_users(c)
-    create_table_history(c)
-
-    # Perform the requested action
-    if args.action == "create":
-        create_user(c, args.username, args.apikey)
-    elif args.action == "update":
-        if args.update_type == "user":
-            update_user(c, args.username, args.apikey)
-        elif args.update_type == "table":
-            if args.table_action == "add":
-                modify_table(c, args.table_name, args.table_action, args.column_name, args.column_type)
-            elif args.table_action == "drop":
-                modify_table(c, args.table_name, args.table_action, args.column_name)
-            elif args.table_action == "show":
-                modify_table(c, args.table_name, args.table_action)
-    elif args.action == "delete":
-        if args.delete_type == "user":
-            delete_user(c, args.username)
-        elif args.delete_type == "job":
-            delete_job(c, args.job_id)
-    elif args.action == "list":
-        show_users(c, args.username, args.details)
-
-    # Commit the changes to the database
-    conn.commit()
-
-    # Close the connection
-    conn.close()
+    manage(args)
 
 
 if __name__ == "__main__":
