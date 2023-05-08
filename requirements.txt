@@ -7,3 +7,5 @@ Pillow
 scikit-image
 torch
 transformers
+sentencepiece
+fcntl

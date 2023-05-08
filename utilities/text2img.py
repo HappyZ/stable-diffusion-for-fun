@@ -37,7 +37,9 @@ class Text2Img:
     def breakfast(self):
         pass
 
-    def lunch(self, prompt: str, negative_prompt: str = "", config: Config = Config()) -> dict:
+    def lunch(
+        self, prompt: str, negative_prompt: str = "", config: Config = Config()
+    ) -> dict:
         self.model.set_txt2img_scheduler(config.get_scheduler())
 
         t = get_epoch_now()

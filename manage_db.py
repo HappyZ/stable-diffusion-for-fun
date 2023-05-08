@@ -34,13 +34,14 @@ def create_table_history(c):
     c.execute(
         """CREATE TABLE IF NOT EXISTS history
                  (uuid TEXT PRIMARY KEY,
-                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  created_at TIMESTAMP,
                   updated_at TIMESTAMP,
                   apikey TEXT,
                   priority INT,
                   type TEXT,
                   status TEXT,
                   prompt TEXT,
+                  lang TEXT,
                   neg_prompt TEXT,
                   seed TEXT,
                   ref_img TEXT,
@@ -146,7 +147,7 @@ def show_users(c, username="", details=False):
             print(f"Username: {user[0]}, API Key: {user[1]}, Number of jobs: {count}")
             if details:
                 c.execute(
-                    "SELECT uuid, created_at, type, status, width, height, steps, prompt, neg_prompt FROM history WHERE apikey=?",
+                    "SELECT uuid, created_at, updated_at, type, status, width, height, steps, prompt, neg_prompt FROM history WHERE apikey=?",
                     (user[1],),
                 )
                 rows = c.fetchall()
@@ -163,7 +164,7 @@ def show_users(c, username="", details=False):
             print(f"Username: {user[0]}, API Key: {user[1]}, Number of jobs: {count}")
             if details:
                 c.execute(
-                    "SELECT uuid, created_at, type, status, width, height, steps, prompt, neg_prompt FROM history WHERE apikey=?",
+                    "SELECT uuid, created_at, updated_at, type, status, width, height, steps, prompt, neg_prompt FROM history WHERE apikey=?",
                     (user[1],),
                 )
                 rows = c.fetchall()

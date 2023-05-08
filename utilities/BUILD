@@ -107,6 +107,11 @@ py_test(
 )
 
 py_library(
+    name="translator",
+    srcs=["translator.py"],
+)
+
+py_library(
     name="web",
     srcs=["web.py"],
 )

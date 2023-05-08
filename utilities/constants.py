@@ -1,12 +1,13 @@
 KEY_APP = "APP"
 VALUE_APP = "demo"
 
-LOGGER_NAME = VALUE_APP
-LOGGER_NAME_TXT2IMG = "txt2img"
-LOGGER_NAME_IMG2IMG = "img2img"
+LOGGER_NAME_FRONTEND = VALUE_APP + "_fe"
+LOGGER_NAME_BACKEND = VALUE_APP + "_be"
+LOGGER_NAME_TXT2IMG = VALUE_APP + "_txt2img"
+LOGGER_NAME_IMG2IMG = VALUE_APP + "_img2img"
 MAX_JOB_NUMBER = 10
 
-
+LOCK_FILEPATH = "/tmp/happysd_db.lock"
 
 KEY_OUTPUT_FOLDER = "outfolder"
 VALUE_OUTPUT_FOLDER_DEFAULT = ""
@@ -30,6 +31,9 @@ VALUE_JOB_IMG2IMG = "img"
 REFERENCE_IMG = "ref_img"
 VALUE_JOB_INPAINTING = "inpaint"
 
+KEY_LANGUAGE = "lang"
+VALUE_LANGUAGE_ZH_CN = "zh_CN"
+VALUE_LANGUAGE_EN = "en_XX"
 KEY_PROMPT = "prompt"
 KEY_NEG_PROMPT = "neg_prompt"
 KEY_SEED = "seed"
@@ -39,9 +43,9 @@ VALUE_WIDTH_DEFAULT = 512  # default value for KEY_WIDTH
 KEY_HEIGHT = "height"
 VALUE_HEIGHT_DEFAULT = 512  # default value for KEY_HEIGHT
 KEY_GUIDANCE_SCALE = "guidance_scale"
-VALUE_GUIDANCE_SCALE_DEFAULT = 25.0  # default value for KEY_GUIDANCE_SCALE
+VALUE_GUIDANCE_SCALE_DEFAULT = 12.5  # default value for KEY_GUIDANCE_SCALE
 KEY_STEPS = "steps"
-VALUE_STEPS_DEFAULT = 50  # default value for KEY_STEPS
+VALUE_STEPS_DEFAULT = 100  # default value for KEY_STEPS
 KEY_SCHEDULER = "scheduler"
 VALUE_SCHEDULER_DEFAULT = "Default"  # default value for KEY_SCHEDULER
 VALUE_SCHEDULER_DPM_SOLVER_MULTISTEP = "DPMSolverMultistepScheduler"
@@ -67,6 +71,7 @@ OPTIONAL_KEYS = [
     KEY_SCHEDULER,  # str
     KEY_STRENGTH,  # float
     REFERENCE_IMG,  # str (base64)
+    KEY_LANGUAGE,
 ]
 
 # - output only
@@ -84,4 +89,9 @@ OUTPUT_ONLY_KEYS = [
     KEY_PRIORITY,  # int
     BASE64IMAGE,  # str (base64)
     KEY_JOB_STATUS,  # str
+]
+
+SUPPORTED_LANGS = [
+    VALUE_LANGUAGE_ZH_CN,
+    VALUE_LANGUAGE_EN,
 ]
