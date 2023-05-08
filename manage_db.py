@@ -109,6 +109,7 @@ def update_quota(c, apikey, quota):
     result = c.fetchone()
     if result is not None:
         c.execute("UPDATE users SET quota=? WHERE apikey=?", (quota, apikey))
+    raise ValueError(f"{apikey} does not exist")
 
 
 def update_username(c, apikey, username):
@@ -212,6 +213,8 @@ def manage(args):
                     )
                 elif args.table_action == "show":
                     modify_table(c, args.table_name, args.table_action)
+            elif args.update_type == "quota":
+                update_quota(c, args.apikey, args.quota)
         elif args.action == "delete":
             if args.delete_type == "user":
                 delete_user(c, args.username)
@@ -247,6 +250,11 @@ def main():
     update_user_parser = update_subparsers.add_parser("user")
     update_user_parser.add_argument("username")
     update_user_parser.add_argument("apikey")
+
+    # Sub-parser for updating a quota
+    update_quota_parser = update_subparsers.add_parser("quota")
+    update_quota_parser.add_argument("apikey")
+    update_quota_parser.add_argument("quota")
 
     # Sub-parser for updating a table
     update_table_parser = update_subparsers.add_parser("table")
