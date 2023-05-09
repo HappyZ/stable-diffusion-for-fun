@@ -6,22 +6,26 @@ import numpy as np
 from PIL import Image
 
 
-def load_image(image: Union[str, bytes]) -> Union[Image.Image, None]:
+def load_image(image: Union[str, bytes], to_base64: bool=False) -> Union[Image.Image, str, None]:
     if isinstance(image, bytes):
         return Image.open(io.BytesIO(image))
     elif os.path.isfile(image):
+        if to_base64:
+            return image_to_base64(image)
         with Image.open(image) as im:
             return Image.fromarray(np.asarray(im))
     return None
 
 
 def save_image(
-    image: Union[bytes, Image.Image], filepath: str, override: bool = False
+    image: Union[bytes, Image.Image, str], filepath: str, override: bool = False
 ) -> bool:
     if os.path.isfile(filepath) and not override:
         return False
     try:
-        if isinstance(image, Image.Image):
+        if isinstance(image, str):
+            base64_to_image(image).save(filepath)
+        elif isinstance(image, Image.Image):
             # this is an Image
             image.save(filepath)
         else:

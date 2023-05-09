@@ -23,10 +23,16 @@ from utilities.constants import REQUIRED_KEYS
 
 from utilities.constants import REFERENCE_IMG
 from utilities.constants import BASE64IMAGE
+from utilities.constants import IMAGE_NOT_FOUND_BASE64
 
 from utilities.constants import HISTORY_TABLE_NAME
 from utilities.constants import USERS_TABLE_NAME
 from utilities.logger import DummyLogger
+
+from utilities.times import get_epoch_now
+from utilities.times import epoch_to_string
+from utilities.images import save_image
+from utilities.images import load_image
 
 
 # Function to acquire a lock on the database file
@@ -45,12 +51,24 @@ def release_lock():
 class Database:
     """This class represents a SQLite database and assumes single-thread usage."""
 
-    def __init__(self, logger: DummyLogger = DummyLogger()):
+    def __init__(self, logger: DummyLogger = DummyLogger(), image_folderpath=""):
         """Initialize the class with a logger instance, but without a database connection or cursor."""
         self.__connect = None  # the database connection object
         self.is_connected = False
         self.__cursor = None  # the cursor object for executing SQL statements
         self.__logger = logger  # the logger object for logging messages
+
+        self.__image_output_folder = ""
+        self.set_image_output_folder(image_folderpath)
+
+    def set_image_output_folder(self, image_folderpath):
+        self.__image_output_folder = image_folderpath  # output image to a folder instead of storing it in sqlite3
+        if image_folderpath:
+            try:
+                os.makedirs(image_folderpath, exist_ok=True)
+            except OSError as err:
+                self.__logger.warn(f"{image_folderpath} failed to create: {err}")
+                self.__image_output_folder = ""
 
     def connect(self, db_filepath) -> bool:
         """
@@ -90,8 +108,8 @@ class Database:
             return result[0]
         return ""
 
-    def get_all_pending_jobs(self, apikey: str = "") -> list:
-        return self.get_jobs(apikey=apikey, job_status=VALUE_JOB_PENDING)
+    def get_one_pending_job(self, apikey: str = "") -> list:
+        return self.get_jobs(apikey=apikey, job_status=VALUE_JOB_PENDING, limit_count=1)
 
     def count_all_pending_jobs(self, apikey: str) -> int:
         """
@@ -108,7 +126,7 @@ class Database:
         result = c.execute(query_string, query_args).fetchone()
         return result[0]
 
-    def get_jobs(self, job_uuid="", apikey="", job_status="") -> list:
+    def get_jobs(self, job_uuid="", apikey="", job_status="", limit_count=0) -> list:
         """
         Get a list of jobs from the HISTORY_TABLE_NAME table based on optional filters.
 
@@ -133,6 +151,8 @@ class Database:
         query = f"SELECT {', '.join(columns)} FROM {HISTORY_TABLE_NAME}"
         if query_filters:
             query += f" WHERE {' AND '.join(query_filters)}"
+        if limit_count:
+            query += f" LIMIT {limit_count}"
 
         # execute the query and return the results
         c = self.get_cursor()
@@ -143,6 +163,11 @@ class Database:
             job = {
                 columns[i]: row[i] for i in range(len(columns)) if row[i] is not None
             }
+            # load image to job if has one
+            for key in [BASE64IMAGE, REFERENCE_IMG]:
+                if key in job and "base64" not in job[key]:
+                    data = load_image(job[key], to_base64=True)
+                    job[key] = data if data else IMAGE_NOT_FOUND_BASE64
             jobs.append(job)
 
         return jobs
@@ -158,6 +183,17 @@ class Database:
         if not job_uuid:
             job_uuid = str(uuid.uuid4())
         self.__logger.info(f"inserting a new job with {job_uuid}")
+
+        # store image to job_dict if has one
+        if (
+            self.__image_output_folder
+            and REFERENCE_IMG in job_dict
+            and "base64" in job_dict[REFERENCE_IMG]
+        ):
+            ref_img_filepath = f"{self.__image_output_folder}/{get_epoch_now()}_ref.png"
+            self.__logger.info(f"saving reference image to {ref_img_filepath}")
+            if save_image(job_dict[REFERENCE_IMG], ref_img_filepath):
+                job_dict[REFERENCE_IMG] = ref_img_filepath
 
         values = [job_uuid, VALUE_JOB_PENDING, datetime.datetime.now()]
         columns = [UUID, KEY_JOB_STATUS, "created_at"] + REQUIRED_KEYS + OPTIONAL_KEYS
@@ -181,6 +217,17 @@ class Database:
 
         Returns True if the update was successful, otherwise False.
         """
+        # store image to job_dict if has one
+        if (
+            self.__image_output_folder
+            and BASE64IMAGE in job_dict
+            and "base64" in job_dict[BASE64IMAGE]
+        ):
+            out_img_filepath = f"{self.__image_output_folder}/{get_epoch_now()}_out.png"
+            self.__logger.info(f"saving output image to {out_img_filepath}")
+            if save_image(job_dict[BASE64IMAGE], out_img_filepath):
+                job_dict[BASE64IMAGE] = out_img_filepath
+
         values = []
         columns = []
         for column in OUTPUT_ONLY_KEYS + REQUIRED_KEYS + OPTIONAL_KEYS:

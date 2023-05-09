@@ -25,7 +25,6 @@ from utilities.database import Database
 
 logger = Logger(name=LOGGER_NAME_FRONTEND)
 database = Database(logger)
-
 app = Flask(__name__)
 
 
@@ -50,7 +49,7 @@ def add_job():
 
     if req[KEY_JOB_TYPE] == VALUE_JOB_IMG2IMG and REFERENCE_IMG not in req:
         return jsonify({"msg": "missing reference image"}), 404
-    
+
     if KEY_LANGUAGE in req and req[KEY_LANGUAGE] not in SUPPORTED_LANGS:
         return jsonify({"msg": f"not suporting {req[KEY_LANGUAGE]}"}), 404
 
@@ -128,6 +127,7 @@ def index():
 
 
 def main(args):
+    database.set_image_output_folder(args.image_output_folder)
     database.connect(args.db)
 
     if args.debug:
@@ -147,6 +147,15 @@ if __name__ == "__main__":
     # Add an argument to set the path of the database file
     parser.add_argument(
         "--db", type=str, default="happysd.db", help="Path to SQLite database file"
+    )
+
+    # Add an argument to set the path of the database file
+    parser.add_argument(
+        "--image-output-folder",
+        "-o",
+        type=str,
+        default="",
+        help="Path to output images",
     )
 
     args = parser.parse_args()

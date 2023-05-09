@@ -68,7 +68,7 @@ def backend(model, is_debugging: bool):
         if is_debugging:
             pending_jobs = database.get_jobs()
         else:
-            pending_jobs = database.get_all_pending_jobs()
+            pending_jobs = database.get_one_pending_job()
         if len(pending_jobs) == 0:
             continue
 
@@ -96,9 +96,6 @@ def backend(model, is_debugging: bool):
                     )
                     logger.info(f"translated {negative_prompt} to {negative_prompt_en}")
                     negative_prompt = negative_prompt_en
-
-        prompt += "RAW photo, (high detailed skin:1.2), 8k uhd, dslr, high quality, film grain, Fujifilm XT3"
-        negative_prompt += "(deformed iris, deformed pupils:1.4), worst quality, low quality, jpeg artifacts, duplicate, morbid, mutilated, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck"
 
         config = Config().set_config(next_job)
 
@@ -135,6 +132,7 @@ def backend(model, is_debugging: bool):
 
 
 def main(args):
+    database.set_image_output_folder(args.image_output_folder)
     database.connect(args.db)
 
     model = load_model(logger, args.gpu)
@@ -156,6 +154,15 @@ if __name__ == "__main__":
 
     # Add an argument to set the path of the database file
     parser.add_argument("--gpu", action="store_true", help="Enable to use GPU device")
+
+    # Add an argument to set the path of the database file
+    parser.add_argument(
+        "--image-output-folder",
+        "-o",
+        type=str,
+        default="",
+        help="Path to output images",
+    )
 
     args = parser.parse_args()
 
