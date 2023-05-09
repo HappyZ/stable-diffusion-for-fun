@@ -128,13 +128,18 @@ def delete_user(c, username):
     c.execute("DELETE FROM users WHERE username=?", (username,))
 
 
-def delete_job(c, uuid):
+def delete_jobs(c, job_uuid="", username=""):
     """Delete the job with the given uuid, or ignore the operation if the uuid does not exist"""
-    c.execute(
-        "DELETE FROM history WHERE uuid=?",
-        (uuid,),
-    )
-
+    if username:
+        c.execute(
+            "DELETE FROM history WHERE apikey=(SELECT apikey FROM users WHERE username=?)",
+            (username,),
+        )
+    elif job_uuid:
+        c.execute(
+            "DELETE FROM history WHERE uuid=?",
+            (job_uuid,),
+        )
 
 def show_users(c, username="", details=False):
     """Print all users in the users table if username is not specified,
@@ -219,7 +224,9 @@ def manage(args):
             if args.delete_type == "user":
                 delete_user(c, args.username)
             elif args.delete_type == "job":
-                delete_job(c, args.job_id)
+                delete_jobs(c, job_uuid=args.job_id)
+            elif args.delete_type == "jobs":
+                delete_jobs(c, username=args.username)
         elif args.action == "list":
             show_users(c, args.username, args.details)
 
@@ -284,6 +291,8 @@ def main():
     user_parser.add_argument("username")
     job_parser = delete_subparsers.add_parser("job")
     job_parser.add_argument("job_id")
+    jobs_parser = delete_subparsers.add_parser("jobs")
+    jobs_parser.add_argument("username")
 
     # Sub-parser for the "list" action
     list_parser = subparsers.add_parser("list")
