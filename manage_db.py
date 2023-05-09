@@ -229,6 +229,8 @@ def manage(args):
                 delete_jobs(c, username=args.username)
         elif args.action == "list":
             show_users(c, args.username, args.details)
+        elif args.action == "vacuum":
+            c.execute("vacuum")
 
         # Commit the changes to the database
         conn.commit()
@@ -300,6 +302,8 @@ def main():
     list_parser.add_argument(
         "--details", action="store_true", help="Showing more details"
     )
+
+    vacuum_parser = subparsers.add_parser("vacuum")
 
     args = parser.parse_args()
 
