@@ -184,6 +184,9 @@ def manage(args):
     # Path to the lock file
     lock_file = "/tmp/happysd_db.lock"
 
+    if args.debug:
+        db_path = "happysd_debug.db"
+
     # Connect to the database (creates a new file if it doesn't exist)
     conn = sqlite3.connect(db_path)
 
@@ -244,6 +247,9 @@ def manage(args):
 def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--debug", action="store_true", help="Enable debugging mode"
+    )
     subparsers = parser.add_subparsers(dest="action", required=True)
 
     # Sub-parser for the "create" action
