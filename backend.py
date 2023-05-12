@@ -122,11 +122,11 @@ def backend(model, is_debugging: bool):
                 )
             continue
 
+        database.update_job(result_dict, job_uuid=next_job[UUID])
         if not is_debugging:
             database.update_job(
                 {KEY_JOB_STATUS: VALUE_JOB_DONE}, job_uuid=next_job[UUID]
             )
-        database.update_job(result_dict, job_uuid=next_job[UUID])
 
     logger.critical("stopped")
 
