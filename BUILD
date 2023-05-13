@@ -10,11 +10,13 @@ par_binary(
         "//utilities:constants",
         "//utilities:database",
         "//utilities:logger",
-
-        "//utilities:times",
     ],
     data=[
         "templates/index.html",
+        "static/jquery-3.6.1.min.js",
+        "static/bootstrap.bundle.min.js",
+        "static/jquery.sketchable.min.js",
+        "static/jsketch.min.js",
     ],
 )
 
@@ -26,6 +28,7 @@ par_binary(
         "//utilities:database",
         "//utilities:logger",
         "//utilities:model",
+        "//utilities:config",
         "//utilities:text2img",
         "//utilities:translator",
         "//utilities:img2img",
