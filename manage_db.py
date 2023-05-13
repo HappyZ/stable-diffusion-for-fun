@@ -1,3 +1,4 @@
+import os
 import argparse
 import sqlite3
 import fcntl
@@ -121,25 +122,55 @@ def update_username(c, apikey, username):
 
 def delete_user(c, username):
     """Delete the user with the given username, or ignore the operation if the user does not exist"""
-    c.execute(
-        "DELETE FROM history WHERE apikey=(SELECT apikey FROM users WHERE username=?)",
-        (username,),
-    )
+    delete_jobs(c, username=username)
     c.execute("DELETE FROM users WHERE username=?", (username,))
+    print(f"removed {c.rowcount} entries")
 
 
 def delete_jobs(c, job_uuid="", username=""):
     """Delete the job with the given uuid, or ignore the operation if the uuid does not exist"""
     if username:
         c.execute(
+            "SELECT img, ref_img FROM history WHERE apikey=(SELECT apikey FROM users WHERE username=?)",
+            (username,),
+        )
+        rows = c.fetchall()
+        for row in rows:
+            for filepath in row:
+                if filepath is None or 'base64' in filepath or not os.path.isfile(filepath):
+                    continue
+                try:
+                    os.remove(filepath)
+                except BaseException:
+                    print(f"failed to remove {filepath}")
+                    raise
+        c.execute(
             "DELETE FROM history WHERE apikey=(SELECT apikey FROM users WHERE username=?)",
             (username,),
         )
+        print(f"removed {c.rowcount} entries")
     elif job_uuid:
+        c.execute(
+            "SELECT img, ref_img FROM history WHERE uuid=?",
+            (job_uuid,),
+        )
+        result = c.fetchone()
+        if result is None:
+            print(f"nothing is found with {job_uuid}")
+            return
+        for filepath in result:
+            if filepath is None or 'base64' in filepath or not os.path.isfile(filepath):
+                continue
+            try:
+                os.remove(filepath)
+            except BaseException:
+                print(f"failed to remove {filepath}")
+                raise
         c.execute(
             "DELETE FROM history WHERE uuid=?",
             (job_uuid,),
         )
+        print(f"removed {c.rowcount} entries")
 
 def show_users(c, username="", details=False):
     """Print all users in the users table if username is not specified,
