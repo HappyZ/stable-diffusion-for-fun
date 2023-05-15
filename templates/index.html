@@ -80,7 +80,7 @@
                             <input type="number" class="form-control" id="inputHeight" placeholder="512" min="1"
                                 max="1024">
                         </div>
-                        <div class="form-row">
+                        <div class="form-row mb-3">
                             <label for="guidanceScale" data-en_XX="Guidance Scale" data-zh_CN="指导强度">Guidance
                                 Scale</label>
                             <input type="number" class="form-control" id="inputGuidanceScale"
@@ -119,8 +119,9 @@
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="card">
-                                            <div class="card-header" data-en_XX="Reference Image" data-zh_CN="参照图">
-                                                Reference Image
+                                            <div class="card-header" data-en_XX="1. Choose Reference Image"
+                                                data-zh_CN="1. 选择参照图">
+                                                1. Choose Reference Image
                                             </div>
                                             <div class="card-body">
                                                 <div class="row">
@@ -157,8 +158,8 @@
                                     </div>
                                     <div class="col-md-8">
                                         <div class="card">
-                                            <div class="card-header" data-en_XX="Result" data-zh_CN="结果">
-                                                Result
+                                            <div class="card-header" data-en_XX="2. Result" data-zh_CN="2. 结果">
+                                                2. Result
                                             </div>
                                             <div class="card-body">
                                                 <ul class="list-group">
@@ -179,8 +180,9 @@
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="card">
-                                            <div class="card-header" data-en_XX="Original Image" data-zh_CN="原图">
-                                                Original Image
+                                            <div class="card-header" data-en_XX="1. Choose Original Image"
+                                                data-zh_CN="1. 选择原图">
+                                                1. Choose Original Image
                                             </div>
                                             <div class="card-body">
                                                 <div class="row">
@@ -201,30 +203,45 @@
                                     </div>
                                     <div class="col-md-4">
                                         <div class="card">
-                                            <div class="card-header" data-en_XX="Mask Image" data-zh_CN="修复部分">
-                                                Mask Image
+                                            <div class="card-header" data-en_XX="2. Remove Area (Mask)"
+                                                data-zh_CN="2. 抹去要修复的部分">
+                                                2. Remove Area (Mask)
                                             </div>
                                             <div class="card-body">
                                                 <div class="row">
-                                                </div>
-                                                <div class="row">
                                                     <button id="newInpaintingJob" class="btn btn-primary mb-3"
                                                         data-en_XX="Let's Go with Image + Mask Below!"
-                                                        data-zh_CN="就用下面的图进行修复！">Let's
+                                                        data-zh_CN="进行修复！">Let's
                                                         Go with Image + Mask Below!</button>
+                                                </div>
+                                                <div class="input-group mb-3">
+                                                    <button id="inpaint-reset" class="btn btn-outline-secondary"
+                                                        data-en_XX="Reset" data-zh_CN="重置">Reset</button>
+                                                    <button id="inpaint-undo" class="btn btn-outline-secondary"
+                                                        data-en_XX="Undo" data-zh_CN="撤销">Undo</button>
+                                                    <button id="inpaint-redo" class="btn btn-outline-secondary"
+                                                        data-en_XX="Redo" data-zh_CN="重做">Redo</button>
+                                                </div>
+                                                <div class="form-row">
+                                                    <label for="inpaint-strike-size" class="form-label"
+                                                        data-en_XX="Strike Size" data-zh_CN="笔触大小">Strike Size</label>
+                                                    <input type="range" class="form-range" min="1" max="30"
+                                                        id="inpaint-strike-size">
+                                                    <output id='range-value'></output>
                                                 </div>
                                             </div>
                                             <div class="card-img-bottom" style="position: relative;">
                                                 <img id="inpaint-img-for-mask" width="100%">
-                                                <canvas style="cursor: pointer; position: absolute; top: 0; left: 0;"
-                                                    id="inpaint-img-mask">
+                                                <div id="inpaint-mask-canvas-container"
+                                                    style="cursor: pointer; position: absolute; top: 0; left: 0;">
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="card">
-                                            <div class="card-header" data-en_XX="Result" data-zh_CN="结果">
-                                                Result
+                                            <div class="card-header" data-en_XX="3. Result" data-zh_CN="3. 结果">
+                                                3. Result
                                             </div>
                                             <div class="card-body">
                                                 <ul class="list-group">
@@ -285,6 +302,7 @@
     <script src="{{ url_for('static',filename='bootstrap.bundle.min.js') }}"></script>
     <script src="{{ url_for('static',filename='jsketch.min.js') }}"></script>
     <script src="{{ url_for('static',filename='jquery.sketchable.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='jquery.sketchable.memento.min.js') }}"></script>
 
     <script>
         function waitForImage(apikeyVal, uuidValue) {
@@ -819,7 +837,7 @@
                         $("#inpaint-img").attr("src", inpaintOriginalImg);
                         var img = new Image();
                         img.src = inpaintOriginalImg;
-                        img.onload = function() {
+                        img.onload = function () {
                             $("#inpaint-img").trigger("change");
                         };
                     };
@@ -828,21 +846,37 @@
                 input.click();
             });
 
+            $("#inpaint-strike-size").on("input", function () {
+                $('#range-value').val($(this).val());
+            });
+            $('#range-value').val($('#inpaint-strike-size').val());
+
             $("#inpaint-img").on("change", function () {
                 var src = $(this).attr("src");
                 $("#inpaint-img-for-mask").attr("src", src);
-                $('#inpaint-img-mask').width($(this).width());
-                $('#inpaint-img-mask').height($(this).height());
+                $("#inpaint-mask-canvas-container").html("<canvas id='inpaint-img-mask' width=" + $(this).width() + " height=" + $(this).height() + ">");
 
                 var options = {
                     graphics: {
                         firstPointSize: 0,
-                        lineWidth: 5,
+                        lineWidth: 10,
                         strokeStyle: 'black',
                     }
                 };
 
-                var $sketcher = $('#inpaint-img-mask').sketchable(options);
+                $sketcher = $('#inpaint-img-mask').sketchable(options);
+                $('#inpaint-reset').click(function () {
+                    $sketcher.sketchable('clear');
+                });
+                $('#inpaint-undo').click(function () {
+                    $sketcher.sketchable('memento.undo');
+                });
+                $('#inpaint-redo').click(function () {
+                    $sketcher.sketchable('memento.redo');
+                });
+                $("#inpaint-strike-size").on("input", function () {
+                    $sketcher.sketchable('config', { graphics: { lineWidth: $(this).val() } });
+                });
             });
 
         });

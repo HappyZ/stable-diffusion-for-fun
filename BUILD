@@ -17,6 +17,7 @@ par_binary(
         "static/bootstrap.bundle.min.js",
         "static/jquery.sketchable.min.js",
         "static/jsketch.min.js",
+        "static/jquery.sketchable.memento.min.js",
     ],
 )
 
