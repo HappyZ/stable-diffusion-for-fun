@@ -22,6 +22,7 @@ from utilities.constants import OPTIONAL_KEYS
 from utilities.constants import REQUIRED_KEYS
 
 from utilities.constants import REFERENCE_IMG
+from utilities.constants import MASK_IMG
 from utilities.constants import BASE64IMAGE
 from utilities.constants import IMAGE_NOT_FOUND_BASE64
 
@@ -164,7 +165,7 @@ class Database:
                 columns[i]: row[i] for i in range(len(columns)) if row[i] is not None
             }
             # load image to job if has one
-            for key in [BASE64IMAGE, REFERENCE_IMG]:
+            for key in [BASE64IMAGE, REFERENCE_IMG, MASK_IMG]:
                 if key in job and "base64" not in job[key]:
                     data = load_image(job[key], to_base64=True)
                     job[key] = data if data else IMAGE_NOT_FOUND_BASE64
@@ -184,16 +185,26 @@ class Database:
             job_uuid = str(uuid.uuid4())
         self.__logger.info(f"inserting a new job with {job_uuid}")
 
+        current_epoch = get_epoch_now()
         # store image to job_dict if has one
         if (
             self.__image_output_folder
             and REFERENCE_IMG in job_dict
             and "base64" in job_dict[REFERENCE_IMG]
         ):
-            ref_img_filepath = f"{self.__image_output_folder}/{get_epoch_now()}_ref.png"
+            ref_img_filepath = f"{self.__image_output_folder}/{current_epoch}_ref.png"
             self.__logger.info(f"saving reference image to {ref_img_filepath}")
             if save_image(job_dict[REFERENCE_IMG], ref_img_filepath):
                 job_dict[REFERENCE_IMG] = ref_img_filepath
+        if (
+            self.__image_output_folder
+            and MASK_IMG in job_dict
+            and "base64" in job_dict[MASK_IMG]
+        ):
+            mask_img_filepath = f"{self.__image_output_folder}/{current_epoch}_mask.png"
+            self.__logger.info(f"saving mask image to {mask_img_filepath}")
+            if save_image(job_dict[MASK_IMG], mask_img_filepath):
+                job_dict[MASK_IMG] = mask_img_filepath
 
         values = [job_uuid, VALUE_JOB_PENDING, datetime.datetime.now()]
         columns = [UUID, KEY_JOB_STATUS, "created_at"] + REQUIRED_KEYS + OPTIONAL_KEYS

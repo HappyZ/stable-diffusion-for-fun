@@ -96,6 +96,20 @@ py_library(
 )
 
 py_library(
+    name="inpainting",
+    srcs=["inpainting.py"],
+    deps=[
+        ":constants",
+        ":config",
+        ":logger",
+        ":images",
+        ":memory",
+        ":model",
+        ":times",
+    ],
+)
+
+py_library(
     name="times",
     srcs=["times.py"],
 )

@@ -3,6 +3,7 @@ import argparse
 from utilities.constants import LOGGER_NAME_BACKEND
 from utilities.constants import LOGGER_NAME_TXT2IMG
 from utilities.constants import LOGGER_NAME_IMG2IMG
+from utilities.constants import LOGGER_NAME_INPAINT
 
 from utilities.constants import UUID
 from utilities.constants import KEY_LANGUAGE
@@ -16,7 +17,9 @@ from utilities.constants import VALUE_JOB_RUNNING
 from utilities.constants import KEY_JOB_TYPE
 from utilities.constants import VALUE_JOB_TXT2IMG
 from utilities.constants import VALUE_JOB_IMG2IMG
+from utilities.constants import VALUE_JOB_INPAINTING
 from utilities.constants import REFERENCE_IMG
+from utilities.constants import MASK_IMG
 
 from utilities.translator import translate_prompt
 from utilities.config import Config
@@ -25,6 +28,7 @@ from utilities.logger import Logger
 from utilities.model import Model
 from utilities.text2img import Text2Img
 from utilities.img2img import Img2Img
+from utilities.inpainting import Inpainting
 from utilities.times import wait_for_seconds
 
 
@@ -61,6 +65,8 @@ def backend(model, is_debugging: bool):
     text2img.breakfast()
     img2img = Img2Img(model, logger=Logger(name=LOGGER_NAME_IMG2IMG))
     img2img.breakfast()
+    inpainting = Inpainting(model, logger=Logger(name=LOGGER_NAME_INPAINT))
+    inpainting.breakfast()
 
     while 1:
         wait_for_seconds(1)
@@ -112,10 +118,20 @@ def backend(model, is_debugging: bool):
                     reference_image=ref_img,
                     config=config,
                 )
+            elif next_job[KEY_JOB_TYPE] == VALUE_JOB_INPAINTING:
+                ref_img = next_job[REFERENCE_IMG]
+                mask_img = next_job[MASK_IMG]
+                result_dict = inpainting.lunch(
+                    prompt=prompt,
+                    negative_prompt=negative_prompt,
+                    reference_image=ref_img,
+                    mask_image=mask_img,
+                    config=config,
+                )
         except KeyboardInterrupt:
             break
         except BaseException as e:
-            logger.error("text2img.lunch error: {}".format(e))
+            logger.error(e)
             if not is_debugging:
                 database.update_job(
                     {KEY_JOB_STATUS: VALUE_JOB_FAILED}, job_uuid=next_job[UUID]

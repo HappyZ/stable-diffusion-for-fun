@@ -46,6 +46,7 @@ def create_table_history(c):
                   neg_prompt TEXT,
                   seed TEXT,
                   ref_img TEXT,
+                  mask_img TEXT,
                   img TEXT,
                   width INT,
                   height INT,
@@ -184,7 +185,7 @@ def show_users(c, username="", details=False):
             print(f"Username: {user[0]}, API Key: {user[1]}, Number of jobs: {count}")
             if details:
                 c.execute(
-                    "SELECT uuid, created_at, updated_at, type, status, width, height, steps, prompt, neg_prompt FROM history WHERE apikey=?",
+                    "SELECT uuid, created_at, updated_at, type, status, width, height, steps, prompt, neg_prompt, img, ref_img, mask_img FROM history WHERE apikey=?",
                     (user[1],),
                 )
                 rows = c.fetchall()
@@ -201,7 +202,7 @@ def show_users(c, username="", details=False):
             print(f"Username: {user[0]}, API Key: {user[1]}, Number of jobs: {count}")
             if details:
                 c.execute(
-                    "SELECT uuid, created_at, updated_at, type, status, width, height, steps, prompt, neg_prompt FROM history WHERE apikey=?",
+                    "SELECT uuid, created_at, updated_at, type, status, width, height, steps, prompt, neg_prompt, img, ref_img, mask_img FROM history WHERE apikey=?",
                     (user[1],),
                 )
                 rows = c.fetchall()

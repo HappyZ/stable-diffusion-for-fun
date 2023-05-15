@@ -176,7 +176,70 @@
                                 </div>
                             </div>
                             <div class="card-body card-specific" id="card-inpainting" style="display:none">
-                                TBD
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <div class="card-header" data-en_XX="Original Image" data-zh_CN="原图">
+                                                Original Image
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <button id="copy-txt-to-img-inpaint" class="btn btn-primary mb-3"
+                                                        data-en_XX="Copy from text-to-image"
+                                                        data-zh_CN="从【文字->图片】结果复制">Copy
+                                                        from text-to-image</button>
+                                                    <button id="copy-last-img-inpaint" class="btn btn-primary mb-3"
+                                                        data-en_XX="Copy from last image result"
+                                                        data-zh_CN="从【图片->图片】结果复制">Copy from last image result</button>
+                                                    <button id="upload-img-inpaint" class="btn btn-primary mb-3"
+                                                        data-en_XX="Upload image" data-zh_CN="上传一张图片">Upload
+                                                        image</button>
+                                                </div>
+                                            </div>
+                                            <img class="card-img-bottom" id="inpaint-img">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <div class="card-header" data-en_XX="Mask Image" data-zh_CN="修复部分">
+                                                Mask Image
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                </div>
+                                                <div class="row">
+                                                    <button id="newInpaintingJob" class="btn btn-primary mb-3"
+                                                        data-en_XX="Let's Go with Image + Mask Below!"
+                                                        data-zh_CN="就用下面的图进行修复！">Let's
+                                                        Go with Image + Mask Below!</button>
+                                                </div>
+                                            </div>
+                                            <div class="card-img-bottom" style="position: relative;">
+                                                <img id="inpaint-img-for-mask" width="100%">
+                                                <canvas style="cursor: pointer; position: absolute; top: 0; left: 0;"
+                                                    id="inpaint-img-mask">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <div class="card-header" data-en_XX="Result" data-zh_CN="结果">
+                                                Result
+                                            </div>
+                                            <div class="card-body">
+                                                <ul class="list-group">
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                        id="inpaintJobUUID"></li>
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                        id="inpaintStatus"></li>
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                        id="inpaintSeed"></li>
+                                                </ul>
+                                            </div>
+                                            <img class="card-img-bottom" id="inpaintImg">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="card-body card-specific" id="card-txt" style="display:none">
                                 <div class="card">
@@ -218,11 +281,10 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.1.min.js"
-        integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
-        crossorigin="anonymous"></script>
+    <script src="{{ url_for('static',filename='jquery-3.6.1.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='jsketch.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='jquery.sketchable.min.js') }}"></script>
 
     <script>
         function waitForImage(apikeyVal, uuidValue) {
@@ -251,6 +313,16 @@
                             $('#img2ImgSeed').html("seed: " + response.jobs[0].seed);
                             if (response.jobs[0].status == "done") {
                                 $('#img2ImgImg').attr('src', response.jobs[0].img);
+                                return;
+                            }
+                            if (response.jobs[0].status == "failed") {
+                                return;
+                            }
+                        } else if (response.jobs[0].type == 'inpaint') {
+                            $('#inpaintStatus').html(response.jobs[0].status);
+                            $('#inpaintSeed').html("seed: " + response.jobs[0].seed);
+                            if (response.jobs[0].status == "done") {
+                                $('#inpaintImg').attr('src', response.jobs[0].img);
                                 return;
                             }
                             if (response.jobs[0].status == "failed") {
@@ -298,7 +370,7 @@
                 });
             });
 
-            // Cache variable to store the selected image data
+            // Cache variable to store the selected image data for img2img
             var imageData = null;
 
             $("#copy-txt-to-img").click(function () {
@@ -561,6 +633,135 @@
                 });
             });
 
+            $('#newInpaintingJob').click(function (e) {
+                e.preventDefault(); // Prevent the default form submission
+
+                if (inpaintOriginalImg == null) {
+                    alert("No image cached")
+                    return;
+                }
+
+                var canvas = $('#inpaint-img-mask')[0];
+                var ctx = canvas.getContext('2d');
+                var maskImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+                // Loop through the pixels and change the colors
+                for (var i = 0; i < maskImageData.data.length; i += 4) {
+                    if (maskImageData.data[i + 3] == 0) { // If pixel is transparent, change to black
+                        maskImageData.data[i] = 0;
+                        maskImageData.data[i + 1] = 0;
+                        maskImageData.data[i + 2] = 0;
+                        maskImageData.data[i + 3] = 255;
+                    } else { // If pixel is not transparent, change to white
+                        maskImageData.data[i] = 255;
+                        maskImageData.data[i + 1] = 255;
+                        maskImageData.data[i + 2] = 255;
+                        maskImageData.data[i + 3] = 255;
+                    }
+                }
+
+                var tempCanvas = document.createElement('canvas'); // Create a new canvas element
+                tempCanvas.width = canvas.width; // Set the width of the new canvas to match the original canvas
+                tempCanvas.height = canvas.height; // Set the height of the new canvas to match the original canvas
+                var tempCtx = tempCanvas.getContext('2d');
+                tempCtx.putImageData(maskImageData, 0, 0); // Put modified image data onto the new canvas
+                var inpaintMaskImg = tempCanvas.toDataURL(); // Get the modified base64-encoded image data
+
+                // Gather input field values
+                var apikeyVal = $('#apiKey').val();
+                var promptVal = $('#prompt').val();
+                var negPromptVal = $('#negPrompt').val();
+                var seedVal = $('#inputSeed').val();
+                if (seedVal == "0" || seedVal == "") {
+                    seedVal = "0";
+                }
+                var guidanceScaleVal = parseFloat($('#inputGuidanceScale').val())
+                if (isNaN(guidanceScaleVal)) {
+                    guidanceScaleVal = 25.0;
+                }
+                var stepsVal = parseInt($('#inputSteps').val());
+                if (isNaN(stepsVal)) {
+                    stepsVal = 50;
+                }
+                var widthVal = parseInt($('#inputWidth').val());
+                if (isNaN(widthVal)) {
+                    widthVal = 512;
+                }
+                var heightVal = parseInt($('#inputHeight').val());
+                if (isNaN(heightVal)) {
+                    heightVal = 512;
+                }
+
+                if (promptVal == "") {
+                    alert("missing prompt!");
+                    return;
+                }
+
+                if (guidanceScaleVal < 1 || guidanceScaleVal > 30) {
+                    alert("guidance scale must be between 1 and 30");
+                    return;
+                }
+
+                if (widthVal < 8 || widthVal > 960) {
+                    alert("width must be between 8 and 960!");
+                    return;
+                }
+
+                if (widthVal % 8 != 0) {
+                    alert("width must be divisible by 8!");
+                    return;
+                }
+
+                if (heightVal < 8 || heightVal > 960) {
+                    alert("height must be between 8 and 960!");
+                    return;
+                }
+
+                if (heightVal % 8 != 0) {
+                    alert("height must be divisible by 8!");
+                    return;
+                }
+                if (stepsVal > 200 || stepsVal < 1) {
+                    alert("steps value must be between 1 and 200!");
+                    return;
+                }
+
+                // Send POST request using Ajax
+                $.ajax({
+                    type: 'POST',
+                    url: '/add_job',
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    data: JSON.stringify({
+                        'apikey': apikeyVal,
+                        'type': 'inpaint',
+                        'ref_img': inpaintOriginalImg,
+                        'mask_img': inpaintMaskImg,
+                        'prompt': promptVal,
+                        'seed': seedVal,
+                        'steps': stepsVal,
+                        'width': widthVal,
+                        'height': heightVal,
+                        'lang': $("#language option:selected").val(),
+                        'guidance_scale': guidanceScaleVal,
+                        'neg_prompt': negPromptVal
+                    }),
+                    success: function (response) {
+                        console.log(response);
+                        if (response.uuid) {
+                            $('#inpaintJobUUID').val(response.uuid);
+                        }
+                        $('#inpaintStatus').html('submitting new job..');
+                        waitForImage(apikeyVal, response.uuid);
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle error response
+                        console.log(xhr.responseText);
+                        $('#inpaintStatus').html('failed');
+                    }
+                });
+            });
+
             // Listen for changes to the select element
             $("#language").change(function () {
                 // Get the newly selected value
@@ -583,6 +784,66 @@
                 // Trigger a change event to update the text and store in cache
                 $("#language").change();
             }
+
+            // Cache variable to store the selected image data for inpainting
+            var inpaintOriginalImg = null;
+
+            $("#copy-txt-to-img-inpaint").click(function () {
+                data = $("#txt2ImgImg").attr("src");
+                if (data == null || data == "") {
+                    alert("nothing found from txt-to-img result");
+                    return;
+                }
+                inpaintOriginalImg = data
+                $("#inpaint-img").attr("src", inpaintOriginalImg);
+                $("#inpaint-img").trigger("change");
+            });
+
+            $("#copy-last-img-inpaint").click(function () {
+                data = $("#img2ImgImg").attr("src");
+                if (data == null || data == "") {
+                    alert("nothing found from img-to-img result");
+                    return;
+                }
+                inpaintOriginalImg = data;
+                $("#inpaint-img").attr("src", inpaintOriginalImg);
+                $("#inpaint-img").trigger("change");
+            });
+
+            $("#upload-img-inpaint").click(function () {
+                var input = $("<input type='file' accept='image/*'>");
+                input.on("change", function () {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        inpaintOriginalImg = e.target.result;
+                        $("#inpaint-img").attr("src", inpaintOriginalImg);
+                        var img = new Image();
+                        img.src = inpaintOriginalImg;
+                        img.onload = function() {
+                            $("#inpaint-img").trigger("change");
+                        };
+                    };
+                    reader.readAsDataURL(input[0].files[0]);
+                });
+                input.click();
+            });
+
+            $("#inpaint-img").on("change", function () {
+                var src = $(this).attr("src");
+                $("#inpaint-img-for-mask").attr("src", src);
+                $('#inpaint-img-mask').width($(this).width());
+                $('#inpaint-img-mask').height($(this).height());
+
+                var options = {
+                    graphics: {
+                        firstPointSize: 0,
+                        lineWidth: 5,
+                        strokeStyle: 'black',
+                    }
+                };
+
+                var $sketcher = $('#inpaint-img-mask').sketchable(options);
+            });
 
         });
     </script>

@@ -5,6 +5,7 @@ LOGGER_NAME_FRONTEND = VALUE_APP + "_fe"
 LOGGER_NAME_BACKEND = VALUE_APP + "_be"
 LOGGER_NAME_TXT2IMG = VALUE_APP + "_txt2img"
 LOGGER_NAME_IMG2IMG = VALUE_APP + "_img2img"
+LOGGER_NAME_INPAINT = VALUE_APP + "_inpaint"
 MAX_JOB_NUMBER = 10
 
 LOCK_FILEPATH = "/tmp/happysd_db.lock"
@@ -29,6 +30,7 @@ KEY_JOB_TYPE = "type"
 VALUE_JOB_TXT2IMG = "txt"  # default value for KEY_JOB_TYPE
 VALUE_JOB_IMG2IMG = "img"
 REFERENCE_IMG = "ref_img"
+MASK_IMG = "mask_img"
 VALUE_JOB_INPAINTING = "inpaint"
 
 KEY_LANGUAGE = "lang"
@@ -70,8 +72,9 @@ OPTIONAL_KEYS = [
     KEY_STEPS,  # int
     KEY_SCHEDULER,  # str
     KEY_STRENGTH,  # float
-    REFERENCE_IMG,  # str (base64)
-    KEY_LANGUAGE,
+    REFERENCE_IMG,  # str (base64 or filepath)
+    MASK_IMG,  # str (base64 or filepath)
+    KEY_LANGUAGE,  # str
 ]
 
 # - output only
