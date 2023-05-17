@@ -15,287 +15,348 @@
     <div class="container">
         <div class="card mb-3">
             <div class="card-body">
-                <div class="row mb-3">
-                    <div class="col-sm-8">
-                        <label for="apiKey" class="form-label" data-en_XX="API Key" data-zh_CN="API 密钥">API Key</label>
-                        <input type="password" class="form-control" id="apiKey" value="">
-                    </div>
-                    <div class="col-sm-4">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="showPreview" disabled>
-                            <label class="form-check-label" for="showPreview" data-en_XX="Preview Image"
-                                data-zh_CN="预览生成图像">Preview Image
-                            </label>
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <div class="input-group">
+                            <label for="apiKey" class="input-group-text" data-en_XX="API Key" data-zh_CN="API 密钥">API
+                                Key</label>
+                            <input type="password" class="form-control" id="apiKey" value="">
                         </div>
-                        <select class="form-select" size="2" id="language">
-                            <option value="zh_CN">中文</option>
-                            <option selected value="en_XX">English</option>
-                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="input-group">
+                            <label class="input-group-text" for="language" data-en_XX="Language"
+                                data-zh_CN="语言">Language</label>
+                            <select class="form-select" id="language">
+                                <option value="zh_CN">中文</option>
+                                <option selected value="en_XX">English</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-                <div class="form-row mb-3">
-                    <label for="prompt" class="form-label" data-en_XX="Describe Your Image"
-                        data-zh_CN="形容你的图片（提示词）">Describe Your Image (Prompts)</label>
-                    <input type="text" class="form-control" id="prompt" aria-describedby="promptHelp" value="">
+                <div class="row mb-3">
+                    <div class="input-group">
+                        <label for="prompt" class="input-group-text" data-en_XX="This image is.."
+                            data-zh_CN="这张图..">This image is..</label>
+                        <input class="form-control" id="prompt" aria-describedby="promptHelp">
+                    </div>
                     <div id="promptHelp" class="form-text"
-                        data-en_XX="Less than 77 words. Example: photo of a cute cat. Use () to emphasize."
-                        data-zh_CN="少于77个词。比如：一张可爱的猫的照片。用括号（）强调重要性。">Less than 77 words. Example: photo of a cute cat.
-                        Use () to emphasize.</div>
+                        data-en_XX="Describe your image with less than 77 words. Example: photo of a cute cat. Use () to emphasize."
+                        data-zh_CN="用少于77个词来形容这张图。比如：一张可爱的猫的照片。用括号（）强调重要性。">Describe your image with less than 77 words.
+                        Example: photo of a cute cat. Use () to emphasize.</div>
                 </div>
-                <div class="form-row mb-3">
-                    <label for="negPrompt" class="form-label"
-                        data-en_XX="Describe What's NOT Your Image (Negative Prompts)"
-                        data-zh_CN="反向形容你的图片（反向提示词）">Describe What's NOT Your Image (Negative Prompts)</label>
-                    <input type="text" class="form-control" id="negPrompt" aria-describedby="negPromptHelp" value="">
-                    <div id="negPromptHelp" class="form-text" data-en_XX="Less than 77 words. Optional."
-                        data-zh_CN="少于77个词。非必填。">Less than 77 words. Optional.</div>
+                <div class="row mb-3">
+                    <div class="input-group">
+                        <label for="negPrompt" class="input-group-text" data-en_XX="This image is NOT.."
+                            data-zh_CN="这张图不是..">This image is NOT..</label>
+                        <input type="text" class="form-control" id="negPrompt" aria-describedby="negPromptHelp">
+                    </div>
+                    <div id="negPromptHelp" class="form-text"
+                        data-en_XX="Optional. Use less than 77 words to describe what's NOT the image."
+                        data-zh_CN="非必填。用少于77个词形容这张图不长什么样。">Optional. Use less than 77 words to describe what's NOT the
+                        image.</div>
                 </div>
                 <div class="row">
-                    <div class="col-md-3">
-                        <div class="form-row">
-                            <label for="inputSeed" data-en_XX="Seed" data-zh_CN="随机数">Seed</label>
-                            <input type="text" class="form-control" id="inputSeed" aria-describedby="inputSeedHelp"
-                                value="">
-                            <div id="inputSeedHelp" class="form-text"
-                                data-en_XX="Leave it empty or set 0 to use random seed" data-zh_CN="非必填。留白或填0使用默认随机数">
-                                Leave it empty or set 0 to use a random seed
-                            </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="input-group input-group-sm">
+                            <label for="inputSeed" class="input-group-text" data-en_XX="Seed"
+                                data-zh_CN="随机数">Seed</label>
+                            <input type="text" class="form-control" id="inputSeed" aria-describedby="inputSeedHelp">
                         </div>
-                        <div class="form-row">
-                            <label for="inputSteps" data-en_XX="Steps" data-zh_CN="迭代次数">Steps</label>
+                        <div id="inputSeedHelp" class="form-text"
+                            data-en_XX="Leave it empty or set 0 to use a random seed" data-zh_CN="非必填。留白或填0使用默认随机数">
+                            Leave it empty or set 0 to use a random seed
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="input-group input-group-sm">
+                            <label for="guidanceScale" class="input-group-text" data-en_XX="Guidance"
+                                data-zh_CN="指示强度">Guidance</label>
+                            <input type="number" class="form-control" id="inputGuidanceScale"
+                                aria-describedby="inputGuidanceScaleHelp" placeholder="12.5" min="1" max="30">
+                        </div>
+                        <div id="inputGuidanceScaleHelp" class="form-text"
+                            data-en_XX="20 = follow prompt, 7 = creative/artistic. Lower it if you see bad images."
+                            data-zh_CN="20 = 提示词重要，7 = 更有创造性。如果结果较差，适当降低该数。">
+                            20 = follow prompt, 7 = creative/artistic. Lower it if you see bad images.
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="input-group input-group-sm">
+                            <label for="inputSteps" class="input-group-text" data-en_XX="Steps"
+                                data-zh_CN="迭代次数">Steps</label>
                             <input type="number" class="form-control" id="inputSteps" aria-describedby="inputStepsHelp"
                                 placeholder="50">
-                            <div id="inputStepsHelp" class="form-text"
-                                data-en_XX="More steps better image but longer time to generate"
-                                data-zh_CN="迭代次数越多图片越好，但生成时间越久">More steps better image but longer time to generate
-                            </div>
                         </div>
-                        <div class="form-row">
-                            <label for="inputWidth" data-en_XX="Width" data-zh_CN="图片宽度">Width</label>
+                        <div id="inputStepsHelp" class="form-text"
+                            data-en_XX="More steps better image but longer time to generate"
+                            data-zh_CN="迭代次数越多图片越好，但生成时间越久">More steps better image but longer time to generate
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="input-group input-group-sm">
+                            <label for="inputWidth" class="input-group-text" data-en_XX="Width"
+                                data-zh_CN="图片宽度">Width</label>
                             <input type="number" class="form-control" id="inputWidth" placeholder="512" min="1"
                                 max="1024">
                         </div>
-                        <div class="form-row">
-                            <label for="inputHeight" data-en_XX="Height" data-zh_CN="图片高度">Height</label>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="input-group input-group-sm">
+                            <label for="inputHeight" class="input-group-text" data-en_XX="Height"
+                                data-zh_CN="图片高度">Height</label>
                             <input type="number" class="form-control" id="inputHeight" placeholder="512" min="1"
                                 max="1024">
                         </div>
-                        <div class="form-row mb-3">
-                            <label for="guidanceScale" data-en_XX="Guidance Scale" data-zh_CN="指导强度">Guidance
-                                Scale</label>
-                            <input type="number" class="form-control" id="inputGuidanceScale"
-                                aria-describedby="inputGuidanceScaleHelp" placeholder="12.5" min="1" max="30">
-                            <div id="inputGuidanceScaleHelp" class="form-text"
-                                data-en_XX="Don't set it to the extremes (1 or 30). 20 means strictly follow prompt, 7 creative/artistic. Lower this number if you see bad images."
-                                data-zh_CN="不建议设最低1或最高30。20代表提示词非常重要，7更有创造性。如果看到图片结果较差，适当减少强度。">
-                                Don't set it to the extremes (1 or 30). 20 means strictly follow prompt, 7
-                                creative/artistic. Lower this number if you see bad images.
-                            </div>
-                        </div>
-                        <div class="row">
-                            <button id="newTxt2ImgJob" class="btn btn-primary" data-en_XX="Let's Go!"
-                                data-zh_CN="生成图片！">Let's Go!</button>
-                        </div>
                     </div>
-                    <div class="col-md-9">
-                        <div class="card mb-3">
-                            <div class="card-header">
-                                <ul class="nav nav-pills card-header-pills">
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="#card-txt" data-en_XX="Text-to-Image"
-                                            data-zh_CN="文字->图片">Text-to-Image</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="#card-img" data-en_XX="Image-to-Image"
-                                            data-zh_CN="图片->图片">Image-to-Image</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="#card-inpainting" data-en_XX="Inpainting"
-                                            data-zh_CN="图片修复">Inpainting</a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="card-body card-specific" id="card-img" style="display:none">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="card">
-                                            <div class="card-header" data-en_XX="1. Choose Reference Image"
-                                                data-zh_CN="1. 选择参照图">
-                                                1. Choose Reference Image
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="row">
-                                                    <button id="copy-txt-to-img" class="btn btn-primary mb-3"
-                                                        data-en_XX="Copy from text-to-image"
-                                                        data-zh_CN="从【文字->图片】结果复制">Copy from text-to-image</button>
-                                                    <button id="copy-last-img" class="btn btn-primary mb-3"
-                                                        data-en_XX="Copy from last image result"
-                                                        data-zh_CN="从【图片->图片】结果复制">Copy from last image result</button>
-                                                    <button id="upload-img" class="btn btn-primary mb-3"
-                                                        data-en_XX="Upload image" data-zh_CN="上传一张图片">Upload
-                                                        image</button>
-                                                </div>
-                                                <div class="form-row">
-                                                    <label for="strength" data-en_XX="Strength"
-                                                        data-zh_CN="改变程度">Strength</label>
-                                                    <input type="number" class="form-control" id="inputStrength"
-                                                        aria-describedby="inputStrengthHelp" placeholder="0.5" min="0"
-                                                        max="1">
-                                                    <div id="inputStrengthHelp" class="form-text"
-                                                        data-en_XX="How different from the original image. 0 means the same, 1 means very different."
-                                                        data-zh_CN="和参照图有多么的不同。0指一样，1指非常不一样。">How different from the
-                                                        original image
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <button id="newImg2ImgJob" class="btn btn-primary mb-3"
-                                                        data-en_XX="Let's Go with Image Below!"
-                                                        data-zh_CN="就用下面的图生成！">Let's Go with Image Below!</button>
-                                                </div>
-                                            </div>
-                                            <img class="card-img-bottom" id="reference-img">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-8">
-                                        <div class="card">
-                                            <div class="card-header" data-en_XX="2. Result" data-zh_CN="2. 结果">
-                                                2. Result
-                                            </div>
-                                            <div class="card-body">
-                                                <ul class="list-group">
-                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                        id="img2ImgJobUUID"></li>
-                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                        id="img2ImgStatus"></li>
-                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                        id="img2ImgSeed"></li>
-                                                </ul>
-                                            </div>
-                                            <img class="card-img-bottom" id="img2ImgImg">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-body card-specific" id="card-inpainting" style="display:none">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="card">
-                                            <div class="card-header" data-en_XX="1. Choose Original Image"
-                                                data-zh_CN="1. 选择原图">
-                                                1. Choose Original Image
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="row">
-                                                    <button id="copy-txt-to-img-inpaint" class="btn btn-primary mb-3"
-                                                        data-en_XX="Copy from text-to-image"
-                                                        data-zh_CN="从【文字->图片】结果复制">Copy
-                                                        from text-to-image</button>
-                                                    <button id="copy-last-img-inpaint" class="btn btn-primary mb-3"
-                                                        data-en_XX="Copy from last image result"
-                                                        data-zh_CN="从【图片->图片】结果复制">Copy from last image result</button>
-                                                    <button id="upload-img-inpaint" class="btn btn-primary mb-3"
-                                                        data-en_XX="Upload image" data-zh_CN="上传一张图片">Upload
-                                                        image</button>
-                                                </div>
-                                            </div>
-                                            <img class="card-img-bottom" id="inpaint-img">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="card">
-                                            <div class="card-header" data-en_XX="2. Remove Area (Mask)"
-                                                data-zh_CN="2. 抹去要修复的部分">
-                                                2. Remove Area (Mask)
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="row">
-                                                    <button id="newInpaintingJob" class="btn btn-primary mb-3"
-                                                        data-en_XX="Let's Go with Image + Mask Below!"
-                                                        data-zh_CN="进行修复！">Let's
-                                                        Go with Image + Mask Below!</button>
-                                                </div>
-                                                <div class="input-group mb-3">
-                                                    <button id="inpaint-reset" class="btn btn-outline-secondary"
-                                                        data-en_XX="Reset" data-zh_CN="重置">Reset</button>
-                                                    <button id="inpaint-undo" class="btn btn-outline-secondary"
-                                                        data-en_XX="Undo" data-zh_CN="撤销">Undo</button>
-                                                    <button id="inpaint-redo" class="btn btn-outline-secondary"
-                                                        data-en_XX="Redo" data-zh_CN="重做">Redo</button>
-                                                </div>
-                                                <div class="form-row">
-                                                    <label for="inpaint-strike-size" class="form-label"
-                                                        data-en_XX="Strike Size" data-zh_CN="笔触大小">Strike Size</label>
-                                                    <input type="range" class="form-range" min="1" max="30"
-                                                        id="inpaint-strike-size">
-                                                    <output id='range-value'></output>
-                                                </div>
-                                            </div>
-                                            <div class="card-img-bottom" style="position: relative;">
-                                                <img id="inpaint-img-for-mask" width="100%">
-                                                <div id="inpaint-mask-canvas-container"
-                                                    style="cursor: pointer; position: absolute; top: 0; left: 0;">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="card">
-                                            <div class="card-header" data-en_XX="3. Result" data-zh_CN="3. 结果">
-                                                3. Result
-                                            </div>
-                                            <div class="card-body">
-                                                <ul class="list-group">
-                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                        id="inpaintJobUUID"></li>
-                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                        id="inpaintStatus"></li>
-                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                        id="inpaintSeed"></li>
-                                                </ul>
-                                            </div>
-                                            <img class="card-img-bottom" id="inpaintImg">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-body card-specific" id="card-txt" style="display:none">
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <ul class="nav nav-pills card-header-pills">
+                            <li class="nav-item">
+                                <a class="nav-link" href="#card-txt" data-en_XX="Text-to-Image"
+                                    data-zh_CN="文字->图片">Text-to-Image</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#card-img" data-en_XX="Image-to-Image"
+                                    data-zh_CN="图片->图片">Image-to-Image</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#card-inpainting" data-en_XX="Inpainting"
+                                    data-zh_CN="图片修复">Inpainting</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body card-specific" id="card-img" style="display:none">
+                        <div class="row">
+                            <div class="col-md-4">
                                 <div class="card">
-                                    <div class="card-header" data-en_XX="Result" data-zh_CN="结果">
-                                        Result
+                                    <div class="card-header" data-en_XX="1. Choose Reference Image"
+                                        data-zh_CN="1. 选择参照图">
+                                        1. Choose Reference Image
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <button id="copy-txt-to-img" class="btn btn-primary mb-3"
+                                                data-en_XX="Copy from text-to-image" data-zh_CN="从【文字->图片】结果复制">Copy
+                                                from text-to-image</button>
+                                            <button id="copy-last-img" class="btn btn-primary mb-3"
+                                                data-en_XX="Copy from last image result" data-zh_CN="从【图片->图片】结果复制">Copy
+                                                from last image result</button>
+                                            <button id="upload-img" class="btn btn-primary mb-3"
+                                                data-en_XX="Upload image" data-zh_CN="上传一张图片">Upload
+                                                image</button>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="input-group input-group-sm">
+                                                <label for="strength" class="input-group-text" data-en_XX="Strength"
+                                                    data-zh_CN="改变程度">Strength</label>
+                                                <input type="number" class="form-control" id="inputStrength"
+                                                    aria-describedby="inputStrengthHelp" placeholder="0.5" min="0"
+                                                    max="1">
+                                            </div>
+                                            <div id="inputStrengthHelp" class="form-text"
+                                                data-en_XX="How different from the original image. 0 means the same, 1 means very different."
+                                                data-zh_CN="和参照图有多么的不同。0指一样，1指非常不一样。">How different from the
+                                                original image
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <button id="newImg2ImgJob" class="btn btn-primary mb-3"
+                                                data-en_XX="Let's Go with Image Below!" data-zh_CN="就用下面的图生成！">Let's
+                                                Go with Image Below!</button>
+                                        </div>
+                                    </div>
+                                    <img class="card-img-bottom" id="reference-img">
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card">
+                                    <div class="card-header" data-en_XX="2. Result" data-zh_CN="2. 结果">
+                                        2. Result
                                     </div>
                                     <div class="card-body">
                                         <ul class="list-group">
-                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                id="txt2ImgJobUUID"></li>
-                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                id="txt2ImgStatus"></li>
-                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                id="txt2ImgSeed"></li>
+                                            <li
+                                                class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span id="img2ImgJobUUID"></span>
+                                                <span class="badge bg-primary rounded-pill" data-en_XX="Job UUID"
+                                                    data-zh_CN="图片唯一识别码">Job UUID</span>
+                                            </li>
+                                            <li
+                                                class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span id="img2ImgStatus"></span>
+                                                <span class="badge bg-primary rounded-pill" data-en_XX="Job Status"
+                                                    data-zh_CN="生成状态">Job Status</span>
+                                            </li>
+                                            <li
+                                                class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span id="img2ImgSeed"></span>
+                                                <span class="badge bg-primary rounded-pill" data-en_XX="Job Seed"
+                                                    data-zh_CN="图片随机数">Job Seed</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <img class="card-img-bottom" id="img2ImgImg">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body card-specific" id="card-inpainting" style="display:none">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header" data-en_XX="1. Choose Original Image" data-zh_CN="1. 选择原图">
+                                        1. Choose Original Image
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <button id="copy-txt-to-img-inpaint" class="btn btn-primary mb-3"
+                                                data-en_XX="Copy from text-to-image" data-zh_CN="从【文字->图片】结果复制">Copy
+                                                from text-to-image</button>
+                                            <button id="copy-last-img-inpaint" class="btn btn-primary mb-3"
+                                                data-en_XX="Copy from last image result" data-zh_CN="从【图片->图片】结果复制">Copy
+                                                from last image result</button>
+                                            <button id="upload-img-inpaint" class="btn btn-primary mb-3"
+                                                data-en_XX="Upload image" data-zh_CN="上传一张图片">Upload
+                                                image</button>
+                                        </div>
+                                    </div>
+                                    <img class="card-img-bottom" id="inpaint-img">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header" data-en_XX="2. Remove Area (Mask)"
+                                        data-zh_CN="2. 抹去要修复的部分">
+                                        2. Remove Area (Mask)
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <button id="newInpaintingJob" class="btn btn-primary mb-3"
+                                                data-en_XX="Let's Go with Image + Mask Below!" data-zh_CN="进行修复！">Let's
+                                                Go with Image + Mask Below!</button>
+                                        </div>
+                                        <div class="input-group mb-3">
+                                            <button id="inpaint-reset" class="btn btn-outline-secondary"
+                                                data-en_XX="Reset" data-zh_CN="重置">Reset</button>
+                                            <button id="inpaint-undo" class="btn btn-outline-secondary"
+                                                data-en_XX="Undo" data-zh_CN="撤销">Undo</button>
+                                            <button id="inpaint-redo" class="btn btn-outline-secondary"
+                                                data-en_XX="Redo" data-zh_CN="重做">Redo</button>
+                                        </div>
+                                        <div class="form-row">
+                                            <label for="inpaint-strike-size" class="form-label" data-en_XX="Strike Size"
+                                                data-zh_CN="笔触大小">Strike Size</label>
+                                            <input type="range" class="form-range" min="1" max="30"
+                                                id="inpaint-strike-size">
+                                            <output id='range-value'></output>
+                                        </div>
+                                    </div>
+                                    <div class="card-img-bottom" style="position: relative;">
+                                        <img id="inpaint-img-for-mask" width="100%">
+                                        <div id="inpaint-mask-canvas-container"
+                                            style="cursor: pointer; position: absolute; top: 0; left: 0;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header" data-en_XX="3. Result" data-zh_CN="3. 结果">
+                                        3. Result
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-group">
+                                            <li
+                                                class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span id="inpaintJobUUID"></span>
+                                                <span class="badge bg-primary rounded-pill" data-en_XX="Job UUID"
+                                                    data-zh_CN="图片唯一识别码">Job UUID</span>
+                                            </li>
+                                            <li
+                                                class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span id="inpaintStatus"></span>
+                                                <span class="badge bg-primary rounded-pill" data-en_XX="Job Status"
+                                                    data-zh_CN="生成状态">Job Status</span>
+                                            </li>
+                                            <li
+                                                class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span id="inpaintSeed"></span>
+                                                <span class="badge bg-primary rounded-pill" data-en_XX="Job Seed"
+                                                    data-zh_CN="图片随机数">Job Seed</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <img class="card-img-bottom" id="inpaintImg">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body card-specific" id="card-txt" style="display:none">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header" data-en_XX="1. Options" data-zh_CN="1. 选项">
+                                        1. Options
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <button id="newTxt2ImgJob" class="btn btn-primary mb-3"
+                                                data-en_XX="Let's Go!" data-zh_CN="生成图片！">Let's Go!</button>
+                                        </div>
+                                    </div>
+                                    <img class="card-img-bottom" id="reference-img">
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card">
+                                    <div class="card-header" data-en_XX="2. Result" data-zh_CN="2. 结果">
+                                        2. Result
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-group">
+                                            <li
+                                                class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span id="txt2ImgJobUUID"></span>
+                                                <span class="badge bg-primary rounded-pill" data-en_XX="Job UUID"
+                                                    data-zh_CN="图片唯一识别码">Job UUID</span>
+                                            </li>
+                                            <li
+                                                class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span id="txt2ImgStatus"></span>
+                                                <span class="badge bg-primary rounded-pill" data-en_XX="Job Status"
+                                                    data-zh_CN="生成状态">Job Status</span>
+                                            </li>
+                                            <li
+                                                class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span id="txt2ImgSeed"></span>
+                                                <span class="badge bg-primary rounded-pill" data-en_XX="Job Seed"
+                                                    data-zh_CN="图片随机数">Job Seed</span>
+                                            </li>
                                         </ul>
                                     </div>
                                     <img class="card-img-bottom" id="txt2ImgImg">
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
         </div>
 
         <form>
-            <div class="mb-3">
-                <label for="jobuuid" class="form-label">Job UUID</label>
+            <div class="input-group mb-3">
+                <label for="jobuuid" class="input-group-text" data-en_XX="Job UUID" data-zh_CN="图片唯一识别码">Job
+                    UUID</label>
                 <input type="jobuuid" class="form-control" id="jobuuid" aria-describedby="">
             </div>
             <button id="getjob" type="submit" class="btn btn-primary" data-en_XX="Get Jobs" data-zh_CN="搜索生成结果"
                 disabled>Get Jobs</button>
-            <button id="canceljob" type="submit" class="btn btn-primary" data-en_XX="Cancel Job" data-zh_CN="取消"
-                disabled>Cancel Job</button>
         </form>
 
-        <div class="mb-3" id="joblist">
-        </div>
+        <table class="table" id="joblist">
+        </table>
     </div>
 
     <script src="{{ url_for('static',filename='jquery-3.6.1.min.js') }}"></script>
