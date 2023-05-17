@@ -379,7 +379,8 @@
                     if (response.jobs.length == 1) {
                         if (response.jobs[0].type == 'txt') {
                             $('#txt2ImgStatus').html(response.jobs[0].status);
-                            $('#txt2ImgSeed').html("seed: " + response.jobs[0].seed);
+                            $('#txt2ImgSeed').html(response.jobs[0].seed);
+                            $('#txt2ImgJobUUID').html(uuidValue);
                             if (response.jobs[0].status == "done") {
                                 $('#txt2ImgImg').attr('src', response.jobs[0].img);
                                 return;
@@ -389,7 +390,8 @@
                             }
                         } else if (response.jobs[0].type == 'img') {
                             $('#img2ImgStatus').html(response.jobs[0].status);
-                            $('#img2ImgSeed').html("seed: " + response.jobs[0].seed);
+                            $('#img2ImgSeed').html(response.jobs[0].seed);
+                            $('#img2ImgJobUUID').html(uuidValue);
                             if (response.jobs[0].status == "done") {
                                 $('#img2ImgImg').attr('src', response.jobs[0].img);
                                 return;
@@ -399,7 +401,8 @@
                             }
                         } else if (response.jobs[0].type == 'inpaint') {
                             $('#inpaintStatus').html(response.jobs[0].status);
-                            $('#inpaintSeed').html("seed: " + response.jobs[0].seed);
+                            $('#inpaintSeed').html(response.jobs[0].seed);
+                            $('#inpaintJobUUID').html(uuidValue);
                             if (response.jobs[0].status == "done") {
                                 $('#inpaintImg').attr('src', response.jobs[0].img);
                                 return;
@@ -587,7 +590,7 @@
                     success: function (response) {
                         console.log(response);
                         if (response.uuid) {
-                            $('#txt2ImgJobUUID').val(response.uuid);
+                            $('#txt2ImgJobUUID').html(response.uuid);
                         }
                         $('#txt2ImgStatus').html('submitting new job..');
                         waitForImage(apikeyVal, response.uuid);
@@ -699,7 +702,7 @@
                     success: function (response) {
                         console.log(response);
                         if (response.uuid) {
-                            $('#img2ImgJobUUID').val(response.uuid);
+                            $('#img2ImgJobUUID').html(response.uuid);
                         }
                         $('#img2ImgStatus').html('submitting new job..');
                         waitForImage(apikeyVal, response.uuid);
@@ -828,7 +831,7 @@
                     success: function (response) {
                         console.log(response);
                         if (response.uuid) {
-                            $('#inpaintJobUUID').val(response.uuid);
+                            $('#inpaintJobUUID').html(response.uuid);
                         }
                         $('#inpaintStatus').html('submitting new job..');
                         waitForImage(apikeyVal, response.uuid);
