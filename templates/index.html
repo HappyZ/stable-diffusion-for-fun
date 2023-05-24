@@ -70,7 +70,7 @@
                             <label for="guidanceScale" class="input-group-text" data-en_XX="Guidance"
                                 data-zh_CN="指示强度">Guidance</label>
                             <input type="number" class="form-control" id="inputGuidanceScale"
-                                aria-describedby="inputGuidanceScaleHelp" placeholder="12.5" min="1" max="30">
+                                aria-describedby="inputGuidanceScaleHelp" placeholder="7.5" min="1" max="30">
                         </div>
                         <div id="inputGuidanceScaleHelp" class="form-text"
                             data-en_XX="20 = follow prompt, 7 = creative/artistic. Lower it if you see bad images."
@@ -517,7 +517,7 @@
                 }
                 var guidanceScaleVal = parseFloat($('#inputGuidanceScale').val())
                 if (isNaN(guidanceScaleVal)) {
-                    guidanceScaleVal = 12.5;
+                    guidanceScaleVal = 7.5;
                 }
                 var stepsVal = parseInt($('#inputSteps').val());
                 if (isNaN(stepsVal)) {
