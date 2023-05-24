@@ -13,6 +13,7 @@ par_binary(
     ],
     data=[
         "templates/index.html",
+        "static/bootstrap.min.css",
         "static/jquery-3.6.1.min.js",
         "static/bootstrap.bundle.min.js",
         "static/jquery.sketchable.min.js",
