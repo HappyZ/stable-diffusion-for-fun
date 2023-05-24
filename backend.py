@@ -89,10 +89,10 @@ def backend(model, is_debugging: bool):
         negative_prompt = next_job[KEY_NEG_PROMPT]
 
         if KEY_LANGUAGE in next_job:
-            logger.info(
-                f"found {next_job[KEY_LANGUAGE]}, translate prompt and negative prompt first"
-            )
             if VALUE_LANGUAGE_EN != next_job[KEY_LANGUAGE]:
+                logger.info(
+                    f"found {next_job[KEY_LANGUAGE]}, translate prompt and negative prompt first"
+                )
                 prompt_en = translate_prompt(prompt, next_job[KEY_LANGUAGE])
                 logger.info(f"translated {prompt} to {prompt_en}")
                 prompt = prompt_en
