@@ -20,6 +20,7 @@ from utilities.constants import LOCK_FILEPATH
 from utilities.constants import OUTPUT_ONLY_KEYS
 from utilities.constants import OPTIONAL_KEYS
 from utilities.constants import REQUIRED_KEYS
+from utilities.constants import INTERNAL_KEYS
 
 from utilities.constants import REFERENCE_IMG
 from utilities.constants import MASK_IMG
@@ -241,7 +242,7 @@ class Database:
 
         values = []
         columns = []
-        for column in OUTPUT_ONLY_KEYS + REQUIRED_KEYS + OPTIONAL_KEYS:
+        for column in INTERNAL_KEYS + OUTPUT_ONLY_KEYS + REQUIRED_KEYS + OPTIONAL_KEYS:
             value = job_dict.get(column, None)
             if value is not None:
                 columns.append(column)

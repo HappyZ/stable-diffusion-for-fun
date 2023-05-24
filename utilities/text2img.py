@@ -7,6 +7,7 @@ from utilities.constants import KEY_SEED
 from utilities.constants import KEY_WIDTH
 from utilities.constants import KEY_HEIGHT
 from utilities.constants import KEY_STEPS
+from utilities.constants import KEY_BASE_MODEL
 from utilities.config import Config
 from utilities.logger import DummyLogger
 from utilities.memory import empty_memory_cache
@@ -140,4 +141,5 @@ class Text2Img:
             KEY_WIDTH: config.get_width(),
             KEY_HEIGHT: config.get_height(),
             KEY_STEPS: config.get_steps(),
+            KEY_BASE_MODEL: self.model.model_name,
         }

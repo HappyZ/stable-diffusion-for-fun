@@ -94,6 +94,16 @@ OUTPUT_ONLY_KEYS = [
     KEY_JOB_STATUS,  # str
 ]
 
+# -- internal
+KEY_BASE_MODEL = "base_model"
+INTERNAL_KEYS = [
+    KEY_BASE_MODEL,
+]
+
+
+#
+# language
+#
 SUPPORTED_LANGS = [
     VALUE_LANGUAGE_ZH_CN,
     VALUE_LANGUAGE_EN,
