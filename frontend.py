@@ -130,6 +130,7 @@ def main(args):
     database.set_image_output_folder(args.image_output_folder)
     database.connect(args.db)
 
+    app.config["TITLE"] = args.title
     app.run(host="0.0.0.0", port=args.port)
 
     database.safe_disconnect()
@@ -144,6 +145,11 @@ if __name__ == "__main__":
     # Add an argument to set the path of the database file
     parser.add_argument(
         "--db", type=str, default="happysd.db", help="Path to SQLite database file"
+    )
+
+    # Add an argument to set the title of service
+    parser.add_argument(
+        "--title", type=str, default="Happy Diffusion", help="Title of the webpage"
     )
 
     # Add an argument to set the path of the database file
