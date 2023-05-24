@@ -28,6 +28,7 @@ par_binary(
     deps=[
         "//utilities:constants",
         "//utilities:database",
+        "//utilities:memory",
         "//utilities:logger",
         "//utilities:model",
         "//utilities:config",

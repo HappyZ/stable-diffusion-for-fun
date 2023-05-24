@@ -13,7 +13,6 @@ from utilities.constants import VALUE_JOB_IMG2IMG
 from utilities.constants import VALUE_JOB_INPAINTING
 from utilities.constants import KEY_JOB_STATUS
 from utilities.constants import VALUE_JOB_PENDING
-from utilities.constants import VALUE_JOB_RUNNING
 from utilities.constants import VALUE_JOB_DONE
 from utilities.constants import LOCK_FILEPATH
 

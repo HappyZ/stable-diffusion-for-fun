@@ -1,4 +1,5 @@
 import argparse
+import torch
 
 from utilities.constants import LOGGER_NAME_BACKEND
 from utilities.constants import LOGGER_NAME_TXT2IMG
@@ -30,6 +31,7 @@ from utilities.text2img import Text2Img
 from utilities.img2img import Img2Img
 from utilities.inpainting import Inpainting
 from utilities.times import wait_for_seconds
+from utilities.memory import empty_memory_cache
 
 
 logger = Logger(name=LOGGER_NAME_BACKEND)
@@ -132,10 +134,10 @@ def backend(model, is_debugging: bool):
             break
         except BaseException as e:
             logger.error(e)
-            if not is_debugging:
-                database.update_job(
-                    {KEY_JOB_STATUS: VALUE_JOB_FAILED}, job_uuid=next_job[UUID]
-                )
+            database.update_job(
+                {KEY_JOB_STATUS: VALUE_JOB_FAILED}, job_uuid=next_job[UUID]
+            )
+            empty_memory_cache()
             continue
 
         database.update_job(result_dict, job_uuid=next_job[UUID])
@@ -172,7 +174,11 @@ if __name__ == "__main__":
     parser.add_argument("--gpu", action="store_true", help="Enable to use GPU device")
 
     # Add an argument to reduce memory usage
-    parser.add_argument("--reduce-memory-usage", action="store_true", help="Reduce memory usage when using GPU")
+    parser.add_argument(
+        "--reduce-memory-usage",
+        action="store_true",
+        help="Reduce memory usage when using GPU",
+    )
 
     # Add an argument to set the path of the database file
     parser.add_argument(
