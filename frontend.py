@@ -130,10 +130,7 @@ def main(args):
     database.set_image_output_folder(args.image_output_folder)
     database.connect(args.db)
 
-    if args.debug:
-        app.run(host="0.0.0.0", port="5432")
-    else:
-        app.run(host="0.0.0.0", port="8888")
+    app.run(host="0.0.0.0", port=args.port)
 
     database.safe_disconnect()
 
@@ -156,6 +153,14 @@ if __name__ == "__main__":
         type=str,
         default="",
         help="Path to output images",
+    )
+
+    # Add an argument to set the port
+    parser.add_argument(
+        "--port",
+        type=str,
+        default="8888",
+        help="Port to expose the service",
     )
 
     args = parser.parse_args()
