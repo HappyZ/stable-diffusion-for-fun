@@ -11,6 +11,7 @@ from utilities.constants import VALUE_HEIGHT_DEFAULT
 from utilities.constants import KEY_STRENGTH
 from utilities.constants import VALUE_STRENGTH_DEFAULT
 from utilities.constants import KEY_SCHEDULER
+from utilities.constants import KEY_IS_PRIVATE
 from utilities.constants import VALUE_SCHEDULER_DEFAULT
 from utilities.constants import VALUE_SCHEDULER_DDIM
 from utilities.constants import VALUE_SCHEDULER_DPM_SOLVER_MULTISTEP
@@ -57,6 +58,17 @@ class Config:
         )
         self.__config[KEY_OUTPUT_FOLDER] = folder
         return self
+
+    def get_is_private(self) -> bool:
+        return bool(self.__config.get(KEY_IS_PRIVATE, False))
+
+    def set_is_private(self, private: bool) -> bool:
+        self.__logger.info(
+            "{} changed from {} to {}".format(
+                KEY_IS_PRIVATE, self.get_is_private(), private
+            )
+        )
+        self.__config[KEY_IS_PRIVATE] = private
 
     def get_guidance_scale(self) -> float:
         return float(

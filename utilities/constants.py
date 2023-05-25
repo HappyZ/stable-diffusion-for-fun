@@ -57,6 +57,7 @@ VALUE_SCHEDULER_PNDM = "PNDMScheduler"
 VALUE_SCHEDULER_DDIM = "DDIMScheduler"
 KEY_STRENGTH = "strength"
 VALUE_STRENGTH_DEFAULT = 0.5  # default value for KEY_STRENGTH
+KEY_IS_PRIVATE = "is_private"
 
 REQUIRED_KEYS = [
     APIKEY,  # str
@@ -75,6 +76,7 @@ OPTIONAL_KEYS = [
     REFERENCE_IMG,  # str (base64 or filepath)
     MASK_IMG,  # str (base64 or filepath)
     KEY_LANGUAGE,  # str
+    KEY_IS_PRIVATE,  # boolean
 ]
 
 # - output only

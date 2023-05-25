@@ -7,6 +7,7 @@ import uuid
 from utilities.constants import APIKEY
 from utilities.constants import UUID
 from utilities.constants import KEY_PRIORITY
+from utilities.constants import KEY_IS_PRIVATE
 from utilities.constants import KEY_JOB_TYPE
 from utilities.constants import VALUE_JOB_TXT2IMG
 from utilities.constants import VALUE_JOB_IMG2IMG
@@ -129,11 +130,11 @@ class Database:
         return result[0]
 
     def get_random_jobs(self, limit_count=0) -> list:
-        query = f"SELECT {', '.join(ANONYMOUS_KEYS)} FROM {HISTORY_TABLE_NAME} WHERE {KEY_JOB_STATUS} = '{VALUE_JOB_DONE}' AND rowid IN (SELECT rowid FROM {HISTORY_TABLE_NAME} ORDER BY RANDOM() LIMIT {limit_count})"
+        query = f"SELECT {', '.join(ANONYMOUS_KEYS)} FROM {HISTORY_TABLE_NAME} WHERE {KEY_JOB_STATUS} = ? AND {KEY_IS_PRIVATE} = ? AND rowid IN (SELECT rowid FROM {HISTORY_TABLE_NAME} ORDER BY RANDOM() LIMIT ?)"
 
         # execute the query and return the results
         c = self.get_cursor()
-        rows = c.execute(query).fetchall()
+        rows = c.execute(query, (VALUE_JOB_DONE, False, limit_count)).fetchall()
 
         jobs = []
         for row in rows:

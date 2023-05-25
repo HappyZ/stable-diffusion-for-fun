@@ -20,6 +20,11 @@
                             <label for="apiKey" class="input-group-text" data-en_XX="API Key" data-zh_CN="API 密钥">API
                                 Key</label>
                             <input type="password" class="form-control" id="apiKey" value="">
+                            <div class="input-group-text">
+                                <input class="form-check-input" type="checkbox" value="" id="isPrivate" value="">
+                            </div>
+                            <label for="isPrivate" class="input-group-text" data-en_XX="Generate Private Images"
+                                data-zh_CN="生成非公开图片">Generate Private Images</label>
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
@@ -702,7 +707,8 @@
                         'height': heightVal,
                         'lang': $("#language option:selected").val(),
                         'guidance_scale': guidanceScaleVal,
-                        'neg_prompt': negPromptVal
+                        'neg_prompt': negPromptVal,
+                        'is_private': $('#isPrivate').is(":checked") ? 1 : 0
                     }),
                     success: function (response) {
                         console.log(response);
@@ -814,7 +820,8 @@
                         'lang': $("#language option:selected").val(),
                         'guidance_scale': guidanceScaleVal,
                         'strength': strengthVal,
-                        'neg_prompt': negPromptVal
+                        'neg_prompt': negPromptVal,
+                        'is_private': $('#isPrivate').is(":checked") ? 1 : 0
                     }),
                     success: function (response) {
                         console.log(response);
@@ -943,7 +950,8 @@
                         'height': heightVal,
                         'lang': $("#language option:selected").val(),
                         'guidance_scale': guidanceScaleVal,
-                        'neg_prompt': negPromptVal
+                        'neg_prompt': negPromptVal,
+                        'is_private': $('#isPrivate').is(":checked") ? 1 : 0
                     }),
                     success: function (response) {
                         console.log(response);
