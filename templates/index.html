@@ -515,6 +515,7 @@
                                 (response.jobs[i].img ? ("<img src='" + response.jobs[i].img + "' class='card-img-top'><div class='card-body'>") : "") +
                                 "<ul class='list-group list-group-flush'>" +
                                 "<li class='list-group-item'>status: " + response.jobs[i].status + "</li>" +
+                                "<li class='list-group-item'>is_private: " + response.jobs[i].is_private + "</li>" +
                                 "<li class='list-group-item'>prompt: " + truncateText(response.jobs[i].prompt, 500) + "</li>" +
                                 "<li class='list-group-item'>neg prompt: " + truncateText(response.jobs[i].neg_prompt, 500) + "</li>" +
                                 "<li class='list-group-item'>seed: " + response.jobs[i].seed + "</li>" +
@@ -572,8 +573,8 @@
                             var element = ("<div class='col col-sm-1 col-md-3 col-lg-4 mb-3'><div class='card'>" +
                                 (shuffled[i].img ? ("<img src='" + shuffled[i].img + "' class='card-img-top'><div class='card-body'>") : "") +
                                 "<ul class='list-group list-group-flush'>" +
-                                "<li class='list-group-item'>prompt: " + truncateText(shuffled[i].prompt, 200) + "</li>" +
-                                "<li class='list-group-item'>neg prompt: " + truncateText(shuffled[i].neg_prompt, 200) + "</li>" +
+                                "<li class='list-group-item'>prompt: " + truncateText(shuffled[i].prompt, 500) + "</li>" +
+                                "<li class='list-group-item'>neg prompt: " + truncateText(shuffled[i].neg_prompt, 500) + "</li>" +
                                 "<li class='list-group-item'>seed: " + shuffled[i].seed + "</li>" +
                                 "<li class='list-group-item'>w x h: " + shuffled[i].width + " x " + shuffled[i].height + "</li>" +
                                 "</ul>" +
