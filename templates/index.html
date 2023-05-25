@@ -502,7 +502,7 @@
 
                         var $joblist = $('#joblist');
                         var $grid = $('<div class="row"></div>');
-                        $joblist.append($grid);
+                        $joblist.html($grid);
                         for (var i = 0; i < jobsLength; i++) {
                             var element = ("<div class='col col-sm-1 col-md-3 col-lg-4 mb-3'><div class='card'>" +
                                 (response.jobs[i].img ? ("<img src='" + response.jobs[i].img + "' class='card-img-top'><div class='card-body'>") : "") +
