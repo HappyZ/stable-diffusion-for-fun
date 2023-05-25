@@ -126,6 +126,15 @@ def get_jobs():
 
     return jsonify({"jobs": jobs})
 
+@app.route("/random_jobs", methods=["GET"])
+def random_jobs():
+    # define max number of jobs to fetch from db
+    job_count_limit = 20
+
+    jobs = database.get_random_jobs(limit_count=job_count_limit)
+
+    return jsonify({"jobs": jobs})
+
 
 @app.route("/")
 def index():

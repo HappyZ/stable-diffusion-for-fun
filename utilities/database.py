@@ -17,6 +17,7 @@ from utilities.constants import VALUE_JOB_DONE
 from utilities.constants import LOCK_FILEPATH
 
 from utilities.constants import OUTPUT_ONLY_KEYS
+from utilities.constants import ANONYMOUS_KEYS
 from utilities.constants import OPTIONAL_KEYS
 from utilities.constants import REQUIRED_KEYS
 from utilities.constants import INTERNAL_KEYS
@@ -126,6 +127,29 @@ class Database:
         c = self.get_cursor()
         result = c.execute(query_string, query_args).fetchone()
         return result[0]
+
+    def get_random_jobs(self, limit_count=0) -> list:
+        query = f"SELECT {', '.join(ANONYMOUS_KEYS)} FROM {HISTORY_TABLE_NAME} WHERE {KEY_JOB_STATUS} = '{VALUE_JOB_DONE}' AND RANDOM() <= .3 LIMIT {limit_count}"
+
+        # execute the query and return the results
+        c = self.get_cursor()
+        rows = c.execute(query).fetchall()
+
+        jobs = []
+        for row in rows:
+            job = {
+                ANONYMOUS_KEYS[i]: row[i]
+                for i in range(len(ANONYMOUS_KEYS))
+                if row[i] is not None
+            }
+            # load image to job if has one
+            for key in [BASE64IMAGE, REFERENCE_IMG, MASK_IMG]:
+                if key in job and "base64" not in job[key]:
+                    data = load_image(job[key], to_base64=True)
+                    job[key] = data if data else IMAGE_NOT_FOUND_BASE64
+            jobs.append(job)
+
+        return jobs
 
     def get_jobs(self, job_uuid="", apikey="", job_status="", limit_count=0) -> list:
         """

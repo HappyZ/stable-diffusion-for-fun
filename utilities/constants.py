@@ -94,6 +94,15 @@ OUTPUT_ONLY_KEYS = [
     KEY_JOB_STATUS,  # str
 ]
 
+ANONYMOUS_KEYS = [
+    KEY_PROMPT,
+    KEY_NEG_PROMPT,
+    KEY_SEED,
+    KEY_WIDTH,
+    KEY_HEIGHT,
+    BASE64IMAGE,
+]
+
 # -- internal
 KEY_BASE_MODEL = "base_model"
 INTERNAL_KEYS = [

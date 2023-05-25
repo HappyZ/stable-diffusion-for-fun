@@ -132,7 +132,7 @@ def delete_jobs(c, job_uuid="", username=""):
     """Delete the job with the given uuid, or ignore the operation if the uuid does not exist"""
     if username:
         c.execute(
-            "SELECT img, ref_img FROM history WHERE apikey=(SELECT apikey FROM users WHERE username=?)",
+            "SELECT img, ref_img, mask_img FROM history WHERE apikey=(SELECT apikey FROM users WHERE username=?)",
             (username,),
         )
         rows = c.fetchall()
@@ -152,7 +152,7 @@ def delete_jobs(c, job_uuid="", username=""):
         print(f"removed {c.rowcount} entries")
     elif job_uuid:
         c.execute(
-            "SELECT img, ref_img FROM history WHERE uuid=?",
+            "SELECT img, ref_img, mask_img FROM history WHERE uuid=?",
             (job_uuid,),
         )
         result = c.fetchone()

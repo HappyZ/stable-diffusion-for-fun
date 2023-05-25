@@ -39,9 +39,9 @@
                             data-zh_CN="这张图..">This image is..</label>
                         <input class="form-control" id="prompt" aria-describedby="promptHelp">
                     </div>
-                    <div id="promptHelp" class="form-text"
-                        data-en_XX="Describe your image. Example: photo of a cat, cute, black and white. Use () to emphasize."
-                        data-zh_CN="形容这张图。比如：一张猫的照片，可爱，黑白色。用括号（）强调重要性。">Describe your image. Example: photo of a cat,
+                    <div id="promptHelp" class="form-text" data-en_XX="Describe your image. Example: photo of a cat, cute, black and white. Use () to
+                        emphasize." data-zh_CN="形容这张图。比如：一张猫的照片，可爱，黑白色。用括号（）强调重要性。">Describe your image. Example: photo
+                        of a cat,
                         cute, black and white. Use () to emphasize.</div>
                 </div>
                 <div class="row mb-3">
@@ -352,6 +352,8 @@
                     <input type="text" class="form-control" id="lookupUUID" value="">
                     <button id="getJobHistory" class="btn btn-primary" data-en_XX="Get Job(s)" data-zh_CN="搜索历史">Get
                         Job(s)</button>
+                    <button id="feelingLucky" class="btn btn-outline-secondary" data-en_XX="I'm Feeling Lucky"
+                        data-zh_CN="看看别人的结果">I'm Feeling Lucky</button>
                 </div>
                 <div id="joblist"></div>
             </div>
@@ -508,8 +510,8 @@
                                 (response.jobs[i].img ? ("<img src='" + response.jobs[i].img + "' class='card-img-top'><div class='card-body'>") : "") +
                                 "<ul class='list-group list-group-flush'>" +
                                 "<li class='list-group-item'>status: " + response.jobs[i].status + "</li>" +
-                                "<li class='list-group-item'>prompt: " + truncateText(response.jobs[i].prompt, 200) + "</li>" +
-                                "<li class='list-group-item'>neg prompt: " + truncateText(response.jobs[i].neg_prompt, 200) + "</li>" +
+                                "<li class='list-group-item'>prompt: " + truncateText(response.jobs[i].prompt, 300) + "</li>" +
+                                "<li class='list-group-item'>neg prompt: " + truncateText(response.jobs[i].neg_prompt, 300) + "</li>" +
                                 "<li class='list-group-item'>seed: " + response.jobs[i].seed + "</li>" +
                                 "<li class='list-group-item'>uuid: " + response.jobs[i].uuid + "</li>" +
                                 "<li class='list-group-item'>w x h: " + response.jobs[i].width + " x " + response.jobs[i].height + "</li>" +
@@ -517,7 +519,7 @@
                                 "</div></div></div>")
                             $grid.append(element);
                         };
-                        $grid.imagesLoaded().progress(function() {
+                        $grid.imagesLoaded().progress(function () {
                             $grid.masonry({
                                 itemSelector: '.col',
                                 columnWidth: '.col',
@@ -532,9 +534,63 @@
                         $('#joblist').html("found nothing");
                     }
                 });
-
             });
 
+            function shuffle(arr) {
+                var j, x, index;
+                for (index = arr.length - 1; index > 0; index--) {
+                    j = Math.floor(Math.random() * (index + 1));
+                    x = arr[index];
+                    arr[index] = arr[j];
+                    arr[j] = x;
+                }
+                return arr;
+            }
+            $('#feelingLucky').click(function () {
+                $.ajax({
+                    type: 'GET',
+                    url: '/random_jobs',
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function (response) {
+                        var jobsLength = response.jobs.length;
+                        if (jobsLength == 0) {
+                            $('#joblist').html("found nothing");
+                            return;
+                        }
+                        var shuffled = response.jobs.map(value => ({ value, sort: Math.random() })).sort((a, b) => a.sort - b.sort).map(({ value }) => value)
+
+                        var $joblist = $('#joblist');
+                        var $grid = $('<div class="row"></div>');
+                        $joblist.html($grid);
+                        for (var i = 0; i < jobsLength; i++) {
+                            var element = ("<div class='col col-sm-1 col-md-3 col-lg-4 mb-3'><div class='card'>" +
+                                (shuffled[i].img ? ("<img src='" + shuffled[i].img + "' class='card-img-top'><div class='card-body'>") : "") +
+                                "<ul class='list-group list-group-flush'>" +
+                                "<li class='list-group-item'>prompt: " + truncateText(shuffled[i].prompt, 200) + "</li>" +
+                                "<li class='list-group-item'>neg prompt: " + truncateText(shuffled[i].neg_prompt, 200) + "</li>" +
+                                "<li class='list-group-item'>seed: " + shuffled[i].seed + "</li>" +
+                                "<li class='list-group-item'>w x h: " + shuffled[i].width + " x " + shuffled[i].height + "</li>" +
+                                "</ul>" +
+                                "</div></div></div>")
+                            $grid.append(element);
+                        };
+                        $grid.imagesLoaded().progress(function () {
+                            $grid.masonry({
+                                itemSelector: '.col',
+                                columnWidth: '.col',
+                                percentPosition: true
+                            });
+                        });
+
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle error response
+                        console.log(xhr.responseText);
+                        $('#joblist').html("found nothing");
+                    }
+                });
+            });
 
             $("#upload-img").click(function () {
                 var input = $("<input type='file' accept='image/*'>");
