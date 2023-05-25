@@ -510,8 +510,8 @@
                                 (response.jobs[i].img ? ("<img src='" + response.jobs[i].img + "' class='card-img-top'><div class='card-body'>") : "") +
                                 "<ul class='list-group list-group-flush'>" +
                                 "<li class='list-group-item'>status: " + response.jobs[i].status + "</li>" +
-                                "<li class='list-group-item'>prompt: " + truncateText(response.jobs[i].prompt, 300) + "</li>" +
-                                "<li class='list-group-item'>neg prompt: " + truncateText(response.jobs[i].neg_prompt, 300) + "</li>" +
+                                "<li class='list-group-item'>prompt: " + truncateText(response.jobs[i].prompt, 500) + "</li>" +
+                                "<li class='list-group-item'>neg prompt: " + truncateText(response.jobs[i].neg_prompt, 500) + "</li>" +
                                 "<li class='list-group-item'>seed: " + response.jobs[i].seed + "</li>" +
                                 "<li class='list-group-item'>uuid: " + response.jobs[i].uuid + "</li>" +
                                 "<li class='list-group-item'>w x h: " + response.jobs[i].width + " x " + response.jobs[i].height + "</li>" +

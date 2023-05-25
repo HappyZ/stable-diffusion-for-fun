@@ -129,7 +129,7 @@ class Database:
         return result[0]
 
     def get_random_jobs(self, limit_count=0) -> list:
-        query = f"SELECT {', '.join(ANONYMOUS_KEYS)} FROM {HISTORY_TABLE_NAME} WHERE {KEY_JOB_STATUS} = '{VALUE_JOB_DONE}' AND RANDOM() <= .3 LIMIT {limit_count}"
+        query = f"SELECT {', '.join(ANONYMOUS_KEYS)} FROM {HISTORY_TABLE_NAME} WHERE {KEY_JOB_STATUS} = '{VALUE_JOB_DONE}' AND rowid IN (SELECT rowid FROM {HISTORY_TABLE_NAME} ORDER BY RANDOM() LIMIT {limit_count})"
 
         # execute the query and return the results
         c = self.get_cursor()
