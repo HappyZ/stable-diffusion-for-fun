@@ -19,6 +19,8 @@ par_binary(
         "static/jquery.sketchable.min.js",
         "static/jsketch.min.js",
         "static/jquery.sketchable.memento.min.js",
+        "static/masonry.pkgd.min.js",
+        "static/imagesloaded.pkgd.min.js",
     ],
 )
 

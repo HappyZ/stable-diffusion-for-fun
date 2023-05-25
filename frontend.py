@@ -81,10 +81,10 @@ def cancel_job():
 
     logger.info("cancelling job with uuid {}..".format(req[UUID]))
 
-    result = database.cancel_job(job_uuid=req[UUID])
+    result = database.cancel_job(job_uuid=req[UUID], apikey=req[APIKEY])
 
     if result:
-        msg = "job with uuid {} removed".format(req[UUID])
+        msg = "your job with uuid {} removed".format(req[UUID])
         return jsonify({"msg": msg})
 
     jobs = database.get_jobs(job_uuid=req[UUID])
@@ -93,7 +93,7 @@ def cancel_job():
         return (
             jsonify(
                 {
-                    "msg": "job {} is not in pending state, unable to cancel".format(
+                    "msg": "your job {} is not in pending state, unable to cancel".format(
                         req[UUID]
                     )
                 }
@@ -102,7 +102,7 @@ def cancel_job():
         )
 
     return (
-        jsonify({"msg": "unable to find the job with uuid {}".format(req[UUID])}),
+        jsonify({"msg": "unable to find your job with uuid {}".format(req[UUID])}),
         404,
     )
 
@@ -115,8 +115,14 @@ def get_jobs():
     user = database.validate_user(req[APIKEY])
     if not user:
         return "", 401
+    
+    # define max number of jobs to fetch from db
+    job_count_limit = 20
 
-    jobs = database.get_jobs(job_uuid=req[UUID])
+    if UUID in req:
+        jobs = database.get_jobs(job_uuid=req[UUID], apikey=req[APIKEY], limit_count=job_count_limit)
+    else:
+        jobs = database.get_jobs(apikey=req[APIKEY], limit_count=job_count_limit)
 
     return jsonify({"jobs": jobs})
 

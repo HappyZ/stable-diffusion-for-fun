@@ -342,18 +342,20 @@
             </div>
         </div>
 
-        <form>
-            <div class="input-group mb-3">
-                <label for="jobuuid" class="input-group-text" data-en_XX="Job UUID" data-zh_CN="图片唯一识别码">Job
-                    UUID</label>
-                <input type="jobuuid" class="form-control" id="jobuuid" aria-describedby="">
-            </div>
-            <button id="getjob" type="submit" class="btn btn-primary" data-en_XX="Get Jobs" data-zh_CN="搜索生成结果"
-                disabled>Get Jobs</button>
-        </form>
 
-        <table class="table" id="joblist">
-        </table>
+        <div class="card">
+            <div class="card-header" data-en_XX="History" data-zh_CN="历史">History</div>
+            <div class="card-body">
+                <div class="input-group mb-3">
+                    <label for="lookupUUID" class="input-group-text" data-en_XX="UUID (Optional)"
+                        data-zh_CN="图片唯一识别码（选填）">UUID (Optional)</label>
+                    <input type="text" class="form-control" id="lookupUUID" value="">
+                    <button id="getJobHistory" class="btn btn-primary" data-en_XX="Get Job(s)" data-zh_CN="搜索历史">Get
+                        Job(s)</button>
+                </div>
+                <div id="joblist"></div>
+            </div>
+        </div>
     </div>
 
     <script src="{{ url_for('static',filename='jquery-3.6.1.min.js') }}"></script>
@@ -361,6 +363,8 @@
     <script src="{{ url_for('static',filename='jsketch.min.js') }}"></script>
     <script src="{{ url_for('static',filename='jquery.sketchable.min.js') }}"></script>
     <script src="{{ url_for('static',filename='jquery.sketchable.memento.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='masonry.pkgd.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='imagesloaded.pkgd.min.js') }}"></script>
 
     <script>
         function waitForImage(apikeyVal, uuidValue) {
@@ -419,22 +423,16 @@
             });
         }
 
-        $(document).ready(function () {
-            console.log("--- csrf token set ---");
-
-            var csrftoken = $("[name=csrfmiddlewaretoken]").val();
-            function csrfSafeMethod(method) {
-                // these HTTP methods do not require CSRF protection
-                return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        function truncateText(text, maxLength) {
+            if (text.length <= maxLength) {
+                return text; // No truncation necessary
             }
-            $.ajaxSetup({
-                beforeSend: function (xhr, settings) {
-                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                    }
-                }
-            });
 
+            // Truncate the text and add an ellipsis (...) at the end
+            return text.slice(0, maxLength) + '...';
+        }
+
+        $(document).ready(function () {
             $('input').each(function () {
                 var input = $(this);
                 var key = input.attr('id');
@@ -471,6 +469,72 @@
                 imageData = data;
                 $("#reference-img").attr("src", imageData);
             });
+
+            $('#txt2ImgJobUUID').click(function () {
+                $('#lookupUUID').val($('#txt2ImgJobUUID').html());
+            });
+            $('#img2ImgJobUUID').click(function () {
+                $('#lookupUUID').val($('#img2ImgJobUUID').html());
+            });
+            $('#inpaintJobUUID').click(function () {
+                $('#lookupUUID').val($('#inpaintJobUUID').html());
+            });
+
+            $('#getJobHistory').click(function () {
+                var apikeyValue = $('#apiKey').val();
+                var uuidValue = $('#lookupUUID').val();
+                if (uuidValue == null) {
+                    alert("no UUID specified");
+                    return;
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: '/get_jobs',
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    data: JSON.stringify({ 'apikey': apikeyValue, 'uuid': uuidValue }),
+                    success: function (response) {
+                        var jobsLength = response.jobs.length;
+                        if (jobsLength == 0) {
+                            $('#joblist').html("found nothing");
+                            return;
+                        }
+
+                        var $joblist = $('#joblist');
+                        var $grid = $('<div class="row"></div>');
+                        $joblist.append($grid);
+                        for (var i = 0; i < jobsLength; i++) {
+                            var element = ("<div class='col col-sm-1 col-md-3 col-lg-4 mb-3'><div class='card'>" +
+                                (response.jobs[i].img ? ("<img src='" + response.jobs[i].img + "' class='card-img-top'><div class='card-body'>") : "") +
+                                "<ul class='list-group list-group-flush'>" +
+                                "<li class='list-group-item'>status: " + response.jobs[i].status + "</li>" +
+                                "<li class='list-group-item'>prompt: " + truncateText(response.jobs[i].prompt, 200) + "</li>" +
+                                "<li class='list-group-item'>neg prompt: " + truncateText(response.jobs[i].neg_prompt, 200) + "</li>" +
+                                "<li class='list-group-item'>seed: " + response.jobs[i].seed + "</li>" +
+                                "<li class='list-group-item'>uuid: " + response.jobs[i].uuid + "</li>" +
+                                "<li class='list-group-item'>w x h: " + response.jobs[i].width + " x " + response.jobs[i].height + "</li>" +
+                                "</ul>" +
+                                "</div></div></div>")
+                            $grid.append(element);
+                        };
+                        $grid.imagesLoaded().progress(function() {
+                            $grid.masonry({
+                                itemSelector: '.col',
+                                columnWidth: '.col',
+                                percentPosition: true
+                            });
+                        });
+
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle error response
+                        console.log(xhr.responseText);
+                        $('#joblist').html("found nothing");
+                    }
+                });
+
+            });
+
 
             $("#upload-img").click(function () {
                 var input = $("<input type='file' accept='image/*'>");

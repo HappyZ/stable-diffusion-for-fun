@@ -152,6 +152,7 @@ class Database:
         query = f"SELECT {', '.join(columns)} FROM {HISTORY_TABLE_NAME}"
         if query_filters:
             query += f" WHERE {' AND '.join(query_filters)}"
+        query += f" ORDER BY created_at DESC"
         if limit_count:
             query += f" LIMIT {limit_count}"
 
