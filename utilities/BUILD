@@ -21,9 +21,11 @@ py_library(
     srcs=["database.py"],
     deps=[
         ":logger",
+        ":times",
+        ":images",
+        ":constants",
     ],
 )
-
 
 py_library(
     name="envvar",
@@ -78,6 +80,7 @@ py_library(
         ":memory",
         ":model",
         ":times",
+        ":images",
     ],
 )
 
@@ -92,6 +95,7 @@ py_library(
         ":memory",
         ":model",
         ":times",
+        ":images",
     ],
 )
 
@@ -123,9 +127,4 @@ py_test(
 py_library(
     name="translator",
     srcs=["translator.py"],
-)
-
-py_library(
-    name="web",
-    srcs=["web.py"],
 )

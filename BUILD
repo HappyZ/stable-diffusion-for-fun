@@ -37,6 +37,7 @@ par_binary(
         "//utilities:text2img",
         "//utilities:translator",
         "//utilities:img2img",
+        "//utilities:inpainting",
         "//utilities:times",
     ],
 )
