@@ -388,6 +388,14 @@
             align-items: center;
         }
 
+        .flying-value {
+            position: absolute;
+            z-index: 9999;
+            font-size: 16px;
+            font-weight: bold;
+            color: #000;
+        }
+
         .reveal-text svg {
             width: 80px;
             height: 80px;
@@ -484,7 +492,7 @@
 
                 if (trimmedString.length > 0) {
                     // Wrap the string in a <span> element with required attributes and events
-                    var spanElement = $("<span class='" + (is_negative ? "negative-prompt-example" : "prompt-example") + " badge rounded-pill text-bg-light'>")
+                    var spanElement = $("<span class='" + (is_negative ? "negative-prompt-example" : "prompt-example") + " badge rounded-pill text-bg-light' style='white-space:normal'>")
                         .text(trimmedString)
                         .css("cursor", "pointer");
 
@@ -507,6 +515,29 @@
                     return;
                 }
                 var newValue = (currentValue === "" ? "" : (currentValue + ", ")) + clickedText;
+
+                // Create a temporary span element to hold the flying value
+                var flyingValue = $('<span class="flying-value"></span>').text(clickedText);
+
+                // Append the temporary span to the body
+                $('body').append(flyingValue);
+
+                // Get the position of the clicked element
+                var clickedPosition = $(this).offset();
+
+                // Animate the flying value to the input field
+                flyingValue.css({
+                    top: clickedPosition.top,
+                    left: clickedPosition.left
+                }).animate({
+                    top: input.offset().top ,
+                    left: input.offset().left,
+                    opacity: 0
+                }, 500, function () {
+                    // Remove the temporary span
+                    flyingValue.remove();
+                });
+
                 input.val(newValue);
                 localStorage.setItem(key, newValue);
             });
