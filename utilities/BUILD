@@ -80,7 +80,6 @@ py_library(
         ":memory",
         ":model",
         ":times",
-        ":images",
     ],
 )
 
@@ -95,7 +94,6 @@ py_library(
         ":memory",
         ":model",
         ":times",
-        ":images",
     ],
 )
 
