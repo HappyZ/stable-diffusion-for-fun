@@ -365,6 +365,36 @@
         </div>
     </div>
 
+    <!-- CSS code -->
+    <style>
+        .private-card {
+            filter: blur(12px);
+            opacity: 0.7;
+            transition: filter 0.3s ease, opacity 0.3s ease;
+        }
+
+        .reveal-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            color: white;
+            border-radius: 10px;
+            transition: filter 0.3s ease, opacity 0.3s ease;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .reveal-text svg {
+            width: 80px;
+            height: 80px;
+            fill: white;
+            filter: drop-shadow(2px 2px 4px rgba(126, 126, 126, 0.8));
+        }
+    </style>
     <script src="{{ url_for('static',filename='jquery-3.6.1.min.js') }}"></script>
     <script src="{{ url_for('static',filename='bootstrap.bundle.min.js') }}"></script>
     <script src="{{ url_for('static',filename='jsketch.min.js') }}"></script>
@@ -439,52 +469,89 @@
             return text.slice(0, maxLength) + '...';
         }
 
+        function parsePromptString(prompt, is_negative) {
+            // Split the prompt input by ","
+            var promptArray = prompt.replace(/[^\w\s,\p{Script=Han}]/gu, '').split(/[,，]/);
+
+            var result = "";
+            for (var i = 0; i < promptArray.length; i++) {
+                var trimmedString = promptArray[i].trim();
+
+                // Truncate the split string if it exceeds 100 words
+                if (trimmedString.split(' ').length > 100) {
+                    trimmedString = trimmedString.split(' ').slice(0, 100).join(' ') + '...';
+                }
+
+                if (trimmedString.length > 0) {
+                    // Wrap the string in a <span> element with required attributes and events
+                    var spanElement = $("<span class='" + (is_negative ? "negative-prompt-example" : "prompt-example") + " badge rounded-pill text-bg-light'>")
+                        .text(trimmedString)
+                        .css("cursor", "pointer");
+
+                    result += spanElement[0].outerHTML;
+                }
+            }
+
+            return result;
+        }
+
         $(document).ready(function () {
-            $('input').each(function () {
+            $(document).on("click", ".negative-prompt-example, .prompt-example", function () {
+                var clickedText = $(this).text();
+                var inputId = ($(this).hasClass("negative-prompt-example")) ? "#negPrompt" : "#prompt";
+                var input = $(inputId);
+                var key = input.attr('id');
+                var currentValue = input.val();
+                if (currentValue && currentValue.includes(clickedText)) {
+                    // If currentValue already contains clickedText, do nothing
+                    return;
+                }
+                var newValue = (currentValue === "" ? "" : (currentValue + ", ")) + clickedText;
+                input.val(newValue);
+                localStorage.setItem(key, newValue);
+            });
+
+            $(document).on({
+                mouseenter: function () {
+                    $(this).toggleClass("text-bg-light text-bg-dark");
+                },
+                mouseleave: function () {
+                    $(this).toggleClass("text-bg-light text-bg-dark");
+                }
+            }, ".negative-prompt-example, .prompt-example");
+
+            $('input[id]').on('input', function () {
+                var input = $(this);
+                var key = input.attr('id');
+                var value = input.val();
+                localStorage.setItem(key, value);
+            }).each(function () {
                 var input = $(this);
                 var key = input.attr('id');
                 var value = localStorage.getItem(key);
-
                 if (value) {
                     input.val(value);
                 }
-
-                input.on('input', function () {
-                    localStorage.setItem(key, input.val());
-                });
             });
 
             // Cache variable to store the selected image data for img2img
             var imageData = null;
 
-            $("#copy-txt-to-img").click(function () {
-                data = $("#txt2ImgImg").attr("src");
+            $("#copy-txt-to-img, #copy-last-img").click(function () {
+                var data;
+                var sourceId = $(this).data("source-id");
+                data = $("#" + sourceId).attr("src");
                 if (data == null || data == "") {
-                    alert("nothing found from txt-to-img result");
+                    alert("Nothing found from the result");
                     return;
                 }
                 imageData = data;
                 $("#reference-img").attr("src", imageData);
             });
 
-            $("#copy-last-img").click(function () {
-                data = $("#img2ImgImg").attr("src");
-                if (data == null || data == "") {
-                    alert("nothing found from img-to-img result");
-                    return;
-                }
-                imageData = data;
-                $("#reference-img").attr("src", imageData);
-            });
-
-            $('#txt2ImgJobUUID').click(function () {
-                $('#lookupUUID').val($('#txt2ImgJobUUID').html());
-            });
-            $('#img2ImgJobUUID').click(function () {
-                $('#lookupUUID').val($('#img2ImgJobUUID').html());
-            });
-            $('#inpaintJobUUID').click(function () {
-                $('#lookupUUID').val($('#inpaintJobUUID').html());
+            $('#txt2ImgJobUUID, #img2ImgJobUUID, #inpaintJobUUID').click(function () {
+                var jobUUID = $(this).html();
+                $('#lookupUUID').val(jobUUID);
             });
 
             $('#getJobHistory').click(function () {
@@ -511,15 +578,73 @@
                         var $grid = $('<div class="row"></div>');
                         $joblist.html($grid);
                         for (var i = 0; i < jobsLength; i++) {
-                            var element = ("<div class='col col-sm-1 col-md-3 col-lg-4 mb-3'><div class='card'>" +
+                            var isPrivate = response.jobs[i].is_private;
+                            var element = $("<div class='col col-sm-6 col-md-6 col-lg-4 mb-3'><div class='card'>" +
                                 (response.jobs[i].img ? ("<img src='" + response.jobs[i].img + "' class='card-img-top'><div class='card-body'>") : "") +
                                 "<ul class='list-group list-group-flush'>" +
                                 "<li class='list-group-item'>status: " + response.jobs[i].status + "</li>" +
-                                "<li class='list-group-item'>is_private: " + response.jobs[i].is_private + "</li>" +
-                                "<li class='list-group-item'>prompt: " + truncateText(response.jobs[i].prompt, 500) + "</li>" +
-                                "<li class='list-group-item'>neg prompt: " + truncateText(response.jobs[i].neg_prompt, 500) + "</li>" +
+                                "<li class='list-group-item'>prompt: " + parsePromptString(response.jobs[i].prompt, false) + "</li>" +
+                                "<li class='list-group-item'>neg prompt: " + parsePromptString(response.jobs[i].neg_prompt, true) + "</li>" +
                                 "<li class='list-group-item'>seed: " + response.jobs[i].seed + "</li>" +
                                 "<li class='list-group-item'>uuid: " + response.jobs[i].uuid + "</li>" +
+                                "<li class='list-group-item'>w x h: " + response.jobs[i].width + " x " + response.jobs[i].height + "</li>" +
+                                "</ul>" +
+                                "</div></div></div>");
+                            // Add event handler for click to toggle blurriness
+                            if (isPrivate === 1) {
+                                element.find('.card').addClass('private-card');
+                                element.append("<div class='reveal-text'><svg viewBox='0 0 16 16'><path d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/></svg></div>");
+
+                                element.on('click', function (event) {
+                                    if ($(event.target).hasClass('negative-prompt-example') || $(event.target).hasClass('prompt-example')) {
+                                        return; // Ignore the click event for those elements
+                                    }
+                                    $(this).find('.card').toggleClass('private-card');
+                                    $(this).find('.reveal-text').toggle();
+                                });
+                            }
+                            $grid.append(element);
+                        };
+                        $grid.imagesLoaded().progress(function () {
+                            $grid.masonry({
+                                itemSelector: '.col',
+                                columnWidth: '.col',
+                                percentPosition: true
+                            });
+                        });
+
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle error response
+                        console.log(xhr.responseText);
+                        $('#joblist').html("found nothing");
+                    }
+                });
+            });
+
+            $('#feelingLucky').click(function () {
+                $.ajax({
+                    type: 'GET',
+                    url: '/random_jobs',
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function (response) {
+                        var jobsLength = response.jobs.length;
+                        if (jobsLength == 0) {
+                            $('#joblist').html("found nothing");
+                            return;
+                        }
+
+                        var $joblist = $('#joblist');
+                        var $grid = $('<div class="row"></div>');
+                        $joblist.html($grid);
+                        for (var i = 0; i < jobsLength; i++) {
+                            var element = ("<div class='col col-sm-6 col-md-6 col-lg-4 mb-3'><div class='card'>" +
+                                (response.jobs[i].img ? ("<img src='" + response.jobs[i].img + "' class='card-img-top'><div class='card-body'>") : "") +
+                                "<ul class='list-group list-group-flush'>" +
+                                "<li class='list-group-item'>prompt: " + parsePromptString(response.jobs[i].prompt, false) + "</li>" +
+                                "<li class='list-group-item'>neg prompt: " + parsePromptString(response.jobs[i].neg_prompt, true) + "</li>" +
+                                "<li class='list-group-item'>seed: " + response.jobs[i].seed + "</li>" +
                                 "<li class='list-group-item'>w x h: " + response.jobs[i].width + " x " + response.jobs[i].height + "</li>" +
                                 "</ul>" +
                                 "</div></div></div>")
@@ -542,71 +667,14 @@
                 });
             });
 
-            function shuffle(arr) {
-                var j, x, index;
-                for (index = arr.length - 1; index > 0; index--) {
-                    j = Math.floor(Math.random() * (index + 1));
-                    x = arr[index];
-                    arr[index] = arr[j];
-                    arr[j] = x;
-                }
-                return arr;
-            }
-            $('#feelingLucky').click(function () {
-                $.ajax({
-                    type: 'GET',
-                    url: '/random_jobs',
-                    contentType: 'application/json; charset=utf-8',
-                    dataType: 'json',
-                    success: function (response) {
-                        var jobsLength = response.jobs.length;
-                        if (jobsLength == 0) {
-                            $('#joblist').html("found nothing");
-                            return;
-                        }
-                        var shuffled = response.jobs.map(value => ({ value, sort: Math.random() })).sort((a, b) => a.sort - b.sort).map(({ value }) => value)
-
-                        var $joblist = $('#joblist');
-                        var $grid = $('<div class="row"></div>');
-                        $joblist.html($grid);
-                        for (var i = 0; i < jobsLength; i++) {
-                            var element = ("<div class='col col-sm-1 col-md-3 col-lg-4 mb-3'><div class='card'>" +
-                                (shuffled[i].img ? ("<img src='" + shuffled[i].img + "' class='card-img-top'><div class='card-body'>") : "") +
-                                "<ul class='list-group list-group-flush'>" +
-                                "<li class='list-group-item'>prompt: " + truncateText(shuffled[i].prompt, 500) + "</li>" +
-                                "<li class='list-group-item'>neg prompt: " + truncateText(shuffled[i].neg_prompt, 500) + "</li>" +
-                                "<li class='list-group-item'>seed: " + shuffled[i].seed + "</li>" +
-                                "<li class='list-group-item'>w x h: " + shuffled[i].width + " x " + shuffled[i].height + "</li>" +
-                                "</ul>" +
-                                "</div></div></div>")
-                            $grid.append(element);
-                        };
-                        $grid.imagesLoaded().progress(function () {
-                            $grid.masonry({
-                                itemSelector: '.col',
-                                columnWidth: '.col',
-                                percentPosition: true
-                            });
-                        });
-
-                    },
-                    error: function (xhr, status, error) {
-                        // Handle error response
-                        console.log(xhr.responseText);
-                        $('#joblist').html("found nothing");
-                    }
-                });
-            });
-
             $("#upload-img").click(function () {
-                var input = $("<input type='file' accept='image/*'>");
-                input.on("change", function () {
+                var input = $("<input type='file' accept='image/*'>").on("change", function () {
                     var reader = new FileReader();
                     reader.onload = function (e) {
                         imageData = e.target.result;
                         $("#reference-img").attr("src", imageData);
                     };
-                    reader.readAsDataURL(input[0].files[0]);
+                    reader.readAsDataURL(this.files[0]);
                 });
                 input.click();
             });
@@ -630,221 +698,165 @@
                 localStorage.setItem('activeLink', target);
             });
 
-            $('#newTxt2ImgJob').click(function (e) {
-                e.preventDefault(); // Prevent the default form submission
 
-                // Gather input field values
-                var apikeyVal = $('#apiKey').val();
-                var promptVal = $('#prompt').val();
-                var negPromptVal = $('#negPrompt').val();
-                var seedVal = $('#inputSeed').val();
-                if (seedVal == "0" || seedVal == "") {
-                    seedVal = "0";
-                }
-                var guidanceScaleVal = parseFloat($('#inputGuidanceScale').val())
-                if (isNaN(guidanceScaleVal)) {
-                    guidanceScaleVal = 7.5;
-                }
-                var stepsVal = parseInt($('#inputSteps').val());
-                if (isNaN(stepsVal)) {
-                    stepsVal = 50;
-                }
-                var widthVal = parseInt($('#inputWidth').val());
-                if (isNaN(widthVal)) {
-                    widthVal = 512;
-                }
-                var heightVal = parseInt($('#inputHeight').val());
-                if (isNaN(heightVal)) {
-                    heightVal = 512;
-                }
-
-                if (promptVal == "") {
-                    alert("missing prompt!");
-                    return;
-                }
-
-                if (guidanceScaleVal < 1 || guidanceScaleVal > 30) {
-                    alert("guidance scale must be between 1 and 30");
-                    return;
-                }
-
-                if (widthVal < 8 || widthVal > 960) {
-                    alert("width must be between 8 and 960!");
-                    return;
-                }
-
-                if (widthVal % 8 != 0) {
-                    alert("width must be divisible by 8!");
-                    return;
-                }
-
-                if (heightVal < 8 || heightVal > 960) {
-                    alert("height must be between 8 and 960!");
-                    return;
-                }
-
-                if (heightVal % 8 != 0) {
-                    alert("height must be divisible by 8!");
-                    return;
-                }
-
-                if (stepsVal > 200 || stepsVal < 1) {
-                    alert("steps value must be between 1 and 200!");
-                    return;
-                }
-
+            function submitJob(formData, uuidSelector, statusSelector) {
                 $.ajax({
                     type: 'POST',
                     url: '/add_job',
                     contentType: 'application/json; charset=utf-8',
                     dataType: 'json',
-                    data: JSON.stringify({
-                        'apikey': apikeyVal,
-                        'type': 'txt',
-                        'prompt': promptVal,
-                        'seed': seedVal,
-                        'steps': stepsVal,
-                        'width': widthVal,
-                        'height': heightVal,
-                        'lang': $("#language option:selected").val(),
-                        'guidance_scale': guidanceScaleVal,
-                        'neg_prompt': negPromptVal,
-                        'is_private': $('#isPrivate').is(":checked") ? 1 : 0
-                    }),
+                    data: JSON.stringify(formData),
                     success: function (response) {
-                        console.log(response);
                         if (response.uuid) {
-                            $('#txt2ImgJobUUID').html(response.uuid);
+                            $(uuidSelector).html(response.uuid);
                         }
-                        $('#txt2ImgStatus').html('submitting new job..');
-                        waitForImage(apikeyVal, response.uuid);
+                        $(statusSelector).html('Submitting new job..');
+                        waitForImage(formData.apikey, response.uuid);
                     },
                     error: function (xhr, status, error) {
                         // Handle error response
                         console.log(xhr.responseText);
-                        $('#txt2ImgStatus').html('failed');
+                        $(statusSelector).html('Failed');
                     }
                 });
+            }
+            $('#newTxt2ImgJob').click(function (e) {
+                e.preventDefault(); // Prevent the default form submission
+
+                // Helper function to get input field value or a default value if empty
+                function getInputValue(id, defaultValue) {
+                    var value = $(id).val().trim();
+                    return value !== '' ? value : defaultValue;
+                }
+
+                // Validate input field values
+                var promptVal = getInputValue('#prompt', '');
+                var guidanceScaleVal = parseFloat(getInputValue('#inputGuidanceScale', '7.5'));
+                var stepsVal = parseInt(getInputValue('#inputSteps', '50'));
+                var widthVal = parseInt(getInputValue('#inputWidth', '512'));
+                var heightVal = parseInt(getInputValue('#inputHeight', '512'));
+
+                if (promptVal === '') {
+                    alert("Missing prompt!");
+                    return;
+                }
+
+                if (guidanceScaleVal < 1 || guidanceScaleVal > 30) {
+                    alert("Guidance scale must be between 1 and 30!");
+                    return;
+                }
+
+                if (widthVal < 8 || widthVal > 960 || widthVal % 8 !== 0) {
+                    alert("Width must be between 8 and 960 and divisible by 8!");
+                    return;
+                }
+
+                if (heightVal < 8 || heightVal > 960 || heightVal % 8 !== 0) {
+                    alert("Height must be between 8 and 960 and divisible by 8!");
+                    return;
+                }
+
+                var apikeyVal = $('#apiKey').val();
+                var negPromptVal = $('#negPrompt').val();
+                var seedVal = getInputValue('#inputSeed', '0');
+
+                var formData = {
+                    'apikey': apikeyVal,
+                    'type': 'txt',
+                    'prompt': promptVal,
+                    'seed': seedVal,
+                    'steps': stepsVal,
+                    'width': widthVal,
+                    'height': heightVal,
+                    'lang': $("#language option:selected").val(),
+                    'guidance_scale': guidanceScaleVal,
+                    'neg_prompt': negPromptVal,
+                    'is_private': $('#isPrivate').is(":checked") ? 1 : 0
+                };
+
+                submitJob(formData, '#txt2ImgJobUUID', '#txt2ImgStatus');
             });
 
             $('#newImg2ImgJob').click(function (e) {
                 e.preventDefault(); // Prevent the default form submission
 
                 if (imageData == null) {
-                    alert("No image cached")
+                    alert("No image cached");
                     return;
                 }
 
-                // Gather input field values
-                var apikeyVal = $('#apiKey').val();
-                var promptVal = $('#prompt').val();
-                var negPromptVal = $('#negPrompt').val();
-                var seedVal = $('#inputSeed').val();
-                if (seedVal == "0" || seedVal == "") {
-                    seedVal = "0";
-                }
-                var guidanceScaleVal = parseFloat($('#inputGuidanceScale').val())
-                if (isNaN(guidanceScaleVal)) {
-                    guidanceScaleVal = 25.0;
-                }
-                var stepsVal = parseInt($('#inputSteps').val());
-                if (isNaN(stepsVal)) {
-                    stepsVal = 50;
-                }
-                var widthVal = parseInt($('#inputWidth').val());
-                if (isNaN(widthVal)) {
-                    widthVal = 512;
-                }
-                var heightVal = parseInt($('#inputHeight').val());
-                if (isNaN(heightVal)) {
-                    heightVal = 512;
-                }
-                var strengthVal = parseFloat($('#inputStrength').val());
-                if (isNaN(strengthVal)) {
-                    strengthVal = 0.5;
+                // Helper function to get input field value or a default value if empty
+                function getInputValue(id, defaultValue) {
+                    var value = $(id).val().trim();
+                    return value !== '' ? value : defaultValue;
                 }
 
-                if (promptVal == "") {
-                    alert("missing prompt!");
+                // Validate input field values
+                var promptVal = getInputValue('#prompt', '');
+                var guidanceScaleVal = parseFloat(getInputValue('#inputGuidanceScale', '25.0'));
+                var stepsVal = parseInt(getInputValue('#inputSteps', '50'));
+                var widthVal = parseInt(getInputValue('#inputWidth', '512'));
+                var heightVal = parseInt(getInputValue('#inputHeight', '512'));
+
+                if (promptVal === '') {
+                    alert("Missing prompt!");
                     return;
                 }
 
                 if (guidanceScaleVal < 1 || guidanceScaleVal > 30) {
-                    alert("guidance scale must be between 1 and 30");
+                    alert("Guidance scale must be between 1 and 30!");
                     return;
                 }
+
+                if (widthVal < 8 || widthVal > 960 || widthVal % 8 !== 0) {
+                    alert("Width must be between 8 and 960 and divisible by 8!");
+                    return;
+                }
+
+                if (heightVal < 8 || heightVal > 960 || heightVal % 8 !== 0) {
+                    alert("Height must be between 8 and 960 and divisible by 8!");
+                    return;
+                }
+
+                var apikeyVal = $('#apiKey').val();
+                var negPromptVal = $('#negPrompt').val();
+                var seedVal = $('#inputSeed').val();
+
+                if (seedVal == "0" || seedVal == "") {
+                    seedVal = "0";
+                }
+
+                var strengthVal = parseFloat(getInputValue('#inputStrength', '0.5'));
 
                 if (strengthVal < 0 || strengthVal > 1) {
-                    alert("strength must be between 0 and 1");
+                    alert("Strength must be between 0 and 1!");
                     return;
                 }
 
-                if (widthVal < 8 || widthVal > 960) {
-                    alert("width must be between 8 and 960!");
-                    return;
-                }
+                var formData = {
+                    'apikey': apikeyVal,
+                    'type': 'img',
+                    'ref_img': imageData,
+                    'prompt': promptVal,
+                    'seed': seedVal,
+                    'steps': stepsVal,
+                    'width': widthVal,
+                    'height': heightVal,
+                    'lang': $("#language option:selected").val(),
+                    'guidance_scale': guidanceScaleVal,
+                    'strength': strengthVal,
+                    'neg_prompt': negPromptVal,
+                    'is_private': $('#isPrivate').is(":checked") ? 1 : 0
+                };
 
-                if (widthVal % 8 != 0) {
-                    alert("width must be divisible by 8!");
-                    return;
-                }
-
-                if (heightVal < 8 || heightVal > 960) {
-                    alert("height must be between 8 and 960!");
-                    return;
-                }
-
-                if (heightVal % 8 != 0) {
-                    alert("height must be divisible by 8!");
-                    return;
-                }
-                if (stepsVal > 200 || stepsVal < 1) {
-                    alert("steps value must be between 1 and 200!");
-                    return;
-                }
-
-                // Send POST request using Ajax
-                $.ajax({
-                    type: 'POST',
-                    url: '/add_job',
-                    contentType: 'application/json; charset=utf-8',
-                    dataType: 'json',
-                    data: JSON.stringify({
-                        'apikey': apikeyVal,
-                        'type': 'img',
-                        'ref_img': imageData,
-                        'prompt': promptVal,
-                        'seed': seedVal,
-                        'steps': stepsVal,
-                        'width': widthVal,
-                        'height': heightVal,
-                        'lang': $("#language option:selected").val(),
-                        'guidance_scale': guidanceScaleVal,
-                        'strength': strengthVal,
-                        'neg_prompt': negPromptVal,
-                        'is_private': $('#isPrivate').is(":checked") ? 1 : 0
-                    }),
-                    success: function (response) {
-                        console.log(response);
-                        if (response.uuid) {
-                            $('#img2ImgJobUUID').html(response.uuid);
-                        }
-                        $('#img2ImgStatus').html('submitting new job..');
-                        waitForImage(apikeyVal, response.uuid);
-                    },
-                    error: function (xhr, status, error) {
-                        // Handle error response
-                        console.log(xhr.responseText);
-                        $('#img2ImgStatus').html('failed');
-                    }
-                });
+                submitJob(formData, '#img2ImgJobUUID', '#img2ImgStatus');
             });
 
             $('#newInpaintingJob').click(function (e) {
                 e.preventDefault(); // Prevent the default form submission
 
                 if (inpaintOriginalImg == null) {
-                    alert("No image cached")
+                    alert("No image cached");
                     return;
                 }
 
@@ -874,101 +886,67 @@
                 tempCtx.putImageData(maskImageData, 0, 0); // Put modified image data onto the new canvas
                 var inpaintMaskImg = tempCanvas.toDataURL(); // Get the modified base64-encoded image data
 
-                // Gather input field values
-                var apikeyVal = $('#apiKey').val();
-                var promptVal = $('#prompt').val();
-                var negPromptVal = $('#negPrompt').val();
-                var seedVal = $('#inputSeed').val();
-                if (seedVal == "0" || seedVal == "") {
-                    seedVal = "0";
-                }
-                var guidanceScaleVal = parseFloat($('#inputGuidanceScale').val())
-                if (isNaN(guidanceScaleVal)) {
-                    guidanceScaleVal = 25.0;
-                }
-                var stepsVal = parseInt($('#inputSteps').val());
-                if (isNaN(stepsVal)) {
-                    stepsVal = 50;
-                }
-                var widthVal = parseInt($('#inputWidth').val());
-                if (isNaN(widthVal)) {
-                    widthVal = 512;
-                }
-                var heightVal = parseInt($('#inputHeight').val());
-                if (isNaN(heightVal)) {
-                    heightVal = 512;
+                // Helper function to get input field value or a default value if empty
+                function getInputValue(id, defaultValue) {
+                    var value = $(id).val().trim();
+                    return value !== '' ? value : defaultValue;
                 }
 
-                if (promptVal == "") {
-                    alert("missing prompt!");
+                // Validate input field values
+                var apikeyVal = $('#apiKey').val();
+                var promptVal = getInputValue('#prompt', '');
+                var negPromptVal = $('#negPrompt').val();
+                var seedVal = getInputValue('#inputSeed', '0');
+                var guidanceScaleVal = parseFloat(getInputValue('#inputGuidanceScale', '25.0'));
+                var stepsVal = parseInt(getInputValue('#inputSteps', '50'));
+                var widthVal = parseInt(getInputValue('#inputWidth', '512'));
+                var heightVal = parseInt(getInputValue('#inputHeight', '512'));
+
+                if (promptVal === '') {
+                    alert("Missing prompt!");
                     return;
                 }
 
                 if (guidanceScaleVal < 1 || guidanceScaleVal > 30) {
-                    alert("guidance scale must be between 1 and 30");
+                    alert("Guidance scale must be between 1 and 30!");
                     return;
                 }
 
-                if (widthVal < 8 || widthVal > 960) {
-                    alert("width must be between 8 and 960!");
+                if (widthVal < 8 || widthVal > 960 || widthVal % 8 !== 0) {
+                    alert("Width must be between 8 and 960 and divisible by 8!");
                     return;
                 }
 
-                if (widthVal % 8 != 0) {
-                    alert("width must be divisible by 8!");
+                if (heightVal < 8 || heightVal > 960 || heightVal % 8 !== 0) {
+                    alert("Height must be between 8 and 960 and divisible by 8!");
                     return;
                 }
 
-                if (heightVal < 8 || heightVal > 960) {
-                    alert("height must be between 8 and 960!");
-                    return;
-                }
+                var formData = {
+                    'apikey': apikeyVal,
+                    'type': 'inpaint',
+                    'ref_img': inpaintOriginalImg,
+                    'mask_img': inpaintMaskImg,
+                    'prompt': promptVal,
+                    'seed': seedVal,
+                    'steps': stepsVal,
+                    'width': widthVal,
+                    'height': heightVal,
+                    'lang': $("#language option:selected").val(),
+                    'guidance_scale': guidanceScaleVal,
+                    'neg_prompt': negPromptVal,
+                    'is_private': $('#isPrivate').is(":checked") ? 1 : 0
+                };
 
-                if (heightVal % 8 != 0) {
-                    alert("height must be divisible by 8!");
-                    return;
-                }
-                if (stepsVal > 200 || stepsVal < 1) {
-                    alert("steps value must be between 1 and 200!");
-                    return;
-                }
-
-                // Send POST request using Ajax
-                $.ajax({
-                    type: 'POST',
-                    url: '/add_job',
-                    contentType: 'application/json; charset=utf-8',
-                    dataType: 'json',
-                    data: JSON.stringify({
-                        'apikey': apikeyVal,
-                        'type': 'inpaint',
-                        'ref_img': inpaintOriginalImg,
-                        'mask_img': inpaintMaskImg,
-                        'prompt': promptVal,
-                        'seed': seedVal,
-                        'steps': stepsVal,
-                        'width': widthVal,
-                        'height': heightVal,
-                        'lang': $("#language option:selected").val(),
-                        'guidance_scale': guidanceScaleVal,
-                        'neg_prompt': negPromptVal,
-                        'is_private': $('#isPrivate').is(":checked") ? 1 : 0
-                    }),
-                    success: function (response) {
-                        console.log(response);
-                        if (response.uuid) {
-                            $('#inpaintJobUUID').html(response.uuid);
-                        }
-                        $('#inpaintStatus').html('submitting new job..');
-                        waitForImage(apikeyVal, response.uuid);
-                    },
-                    error: function (xhr, status, error) {
-                        // Handle error response
-                        console.log(xhr.responseText);
-                        $('#inpaintStatus').html('failed');
-                    }
-                });
+                submitJob(formData, '#inpaintJobUUID', '#inpaintStatus');
             });
+
+            // Define the function to update the text based on the selected language
+            function updateText(language) {
+                $("[data-" + language + "]").each(function () {
+                    $(this).text($(this).data(language.toLowerCase()));
+                });
+            }
 
             // Listen for changes to the select element
             $("#language").change(function () {
@@ -978,9 +956,8 @@
                 // Store the selected value in cache
                 localStorage.setItem("selectedLanguage", newLanguage);
 
-                $("[data-" + newLanguage + "]").each(function () {
-                    $(this).text($(this).data(newLanguage.toLowerCase()));
-                });
+                // Update the text based on the selected language
+                updateText(newLanguage);
             });
 
             // Get the selected value from cache (if it exists)
@@ -989,33 +966,35 @@
                 // Set the selected value
                 $("#language").val(cachedLanguage);
 
-                // Trigger a change event to update the text and store in cache
-                $("#language").change();
+                // Update the text based on the selected language
+                updateText(cachedLanguage);
             }
 
             // Cache variable to store the selected image data for inpainting
             var inpaintOriginalImg = null;
 
-            $("#copy-txt-to-img-inpaint").click(function () {
-                data = $("#txt2ImgImg").attr("src");
-                if (data == null || data == "") {
-                    alert("nothing found from txt-to-img result");
-                    return;
-                }
-                inpaintOriginalImg = data
-                $("#inpaint-img").attr("src", inpaintOriginalImg);
-                $("#inpaint-img").trigger("change");
-            });
-
-            $("#copy-last-img-inpaint").click(function () {
-                data = $("#img2ImgImg").attr("src");
-                if (data == null || data == "") {
-                    alert("nothing found from img-to-img result");
-                    return;
-                }
+            function setInpaintOriginalImg(data) {
                 inpaintOriginalImg = data;
                 $("#inpaint-img").attr("src", inpaintOriginalImg);
                 $("#inpaint-img").trigger("change");
+            }
+
+            $("#copy-txt-to-img-inpaint").click(function () {
+                var data = $("#txt2ImgImg").attr("src");
+                if (!data) {
+                    alert("Nothing found from txt-to-img result");
+                    return;
+                }
+                setInpaintOriginalImg(data);
+            });
+
+            $("#copy-last-img-inpaint").click(function () {
+                var data = $("#img2ImgImg").attr("src");
+                if (!data) {
+                    alert("Nothing found from img-to-img result");
+                    return;
+                }
+                setInpaintOriginalImg(data);
             });
 
             $("#upload-img-inpaint").click(function () {
@@ -1023,8 +1002,7 @@
                 input.on("change", function () {
                     var reader = new FileReader();
                     reader.onload = function (e) {
-                        inpaintOriginalImg = e.target.result;
-                        $("#inpaint-img").attr("src", inpaintOriginalImg);
+                        setInpaintOriginalImg(e.target.result);
                         var img = new Image();
                         img.src = inpaintOriginalImg;
                         img.onload = function () {
@@ -1037,7 +1015,9 @@
             });
 
             $("#inpaint-strike-size").on("input", function () {
-                $('#range-value').val($(this).val());
+                var strikeSize = $(this).val();
+                $('#range-value').val(strikeSize);
+                $("#inpaint-strike-size").trigger("inputChange", strikeSize);
             });
             $('#range-value').val($('#inpaint-strike-size').val());
 
@@ -1064,12 +1044,12 @@
                 $('#inpaint-redo').click(function () {
                     $sketcher.sketchable('memento.redo');
                 });
-                $("#inpaint-strike-size").on("input", function () {
-                    $sketcher.sketchable('config', { graphics: { lineWidth: $(this).val() } });
+                $("#inpaint-strike-size").on("inputChange", function (e, strikeSize) {
+                    $sketcher.sketchable('config', { graphics: { lineWidth: strikeSize } });
                 });
             });
-
         });
+
     </script>
 </body>
 

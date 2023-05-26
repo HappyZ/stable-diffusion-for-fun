@@ -3,6 +3,7 @@ load("@subpar//:subpar.bzl", "par_binary")
 
 package(default_visibility=["//visibility:public"])
 
+# subpar broke flask file path, don't buidl with .par
 par_binary(
     name="frontend",
     srcs=["frontend.py"],
