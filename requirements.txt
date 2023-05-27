@@ -8,3 +8,4 @@ scikit-image==0.20.0
 torch==2.0.0
 transformers==4.28.1
 sentencepiece==0.1.99
+Flask-Limiter==3.3.1

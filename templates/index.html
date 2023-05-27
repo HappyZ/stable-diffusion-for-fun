@@ -517,7 +517,7 @@
 
         function parsePromptString(prompt, is_negative) {
             // Split the prompt input by ","
-            var promptArray = prompt.replace(/[^\w\s,\p{Script=Han}]/gu, '').split(/[,，]/);
+            var promptArray = prompt.replace(/[^\w\s,\p{Script=Han}]|\d/gu, '').split(/[,，]/);
 
             var result = "";
             for (var i = 0; i < promptArray.length; i++) {
@@ -729,9 +729,7 @@
 
                     },
                     error: function (xhr, status, error) {
-                        // Handle error response
-                        console.log(xhr.responseText);
-                        $('#othersJobList').html("found nothing");
+                        $('#othersJobList').html(error);
                     }
                 });
             });

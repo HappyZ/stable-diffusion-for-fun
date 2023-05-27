@@ -4,6 +4,8 @@ from flask import jsonify
 from flask import Flask
 from flask import render_template
 from flask import request
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 from utilities.constants import LOGGER_NAME_FRONTEND
 
@@ -26,6 +28,10 @@ from utilities.database import Database
 logger = Logger(name=LOGGER_NAME_FRONTEND)
 database = Database(logger)
 app = Flask(__name__)
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+)
 
 
 @app.route("/add_job", methods=["POST"])
@@ -115,18 +121,22 @@ def get_jobs():
     user = database.validate_user(req[APIKEY])
     if not user:
         return "", 401
-    
+
     # define max number of jobs to fetch from db
     job_count_limit = 20
 
     if UUID in req:
-        jobs = database.get_jobs(job_uuid=req[UUID], apikey=req[APIKEY], limit_count=job_count_limit)
+        jobs = database.get_jobs(
+            job_uuid=req[UUID], apikey=req[APIKEY], limit_count=job_count_limit
+        )
     else:
         jobs = database.get_jobs(apikey=req[APIKEY], limit_count=job_count_limit)
 
     return jsonify({"jobs": jobs})
 
+
 @app.route("/random_jobs", methods=["GET"])
+@limiter.limit("1/second")
 def random_jobs():
     # define max number of jobs to fetch from db
     job_count_limit = 20
