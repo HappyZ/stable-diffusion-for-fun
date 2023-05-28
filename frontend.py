@@ -147,13 +147,13 @@ def get_jobs():
         jobs = database.get_jobs(
             job_uuid=req[UUID],
             apikey=req[APIKEY],
-            job_types=req.get[KEY_JOB_TYPE].split(",") if req.get(KEY_JOB_TYPE, "") else [],
+            job_types=req[KEY_JOB_TYPE].split(",") if req.get(KEY_JOB_TYPE, "") else [],
             limit_count=job_count_limit,
         )
     else:
         jobs = database.get_jobs(
             apikey=req[APIKEY],
-            job_types=req.get[KEY_JOB_TYPE].split(",") if req.get(KEY_JOB_TYPE, "") else [],
+            job_types=req[KEY_JOB_TYPE].split(",") if req.get(KEY_JOB_TYPE, "") else [],
             limit_count=job_count_limit,
         )
 
