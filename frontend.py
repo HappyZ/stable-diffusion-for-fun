@@ -13,7 +13,9 @@ from utilities.logger import Logger
 
 from utilities.constants import APIKEY
 from utilities.constants import KEY_JOB_TYPE
+from utilities.constants import BASE64IMAGE
 from utilities.constants import REFERENCE_IMG
+from utilities.constants import MASK_IMG
 from utilities.constants import MAX_JOB_NUMBER
 from utilities.constants import OPTIONAL_KEYS
 from utilities.constants import KEY_LANGUAGE
@@ -23,7 +25,10 @@ from utilities.constants import UUID
 from utilities.constants import VALUE_JOB_TXT2IMG
 from utilities.constants import VALUE_JOB_IMG2IMG
 from utilities.constants import VALUE_JOB_INPAINTING
+from utilities.constants import VALUE_JOB_RESTORATION
+from utilities.constants import IMAGE_NOT_FOUND_BASE64
 from utilities.database import Database
+from utilities.images import load_image
 
 logger = Logger(name=LOGGER_NAME_FRONTEND)
 database = Database(logger)
@@ -35,6 +40,7 @@ limiter = Limiter(
 
 
 @app.route("/add_job", methods=["POST"])
+@limiter.limit("1/second")
 def add_job():
     req = request.get_json()
 
@@ -49,12 +55,22 @@ def add_job():
     for key in req.keys():
         if (key not in REQUIRED_KEYS) and (key not in OPTIONAL_KEYS):
             return jsonify({"msg": "provided one or more unrecognized keys"}), 404
-    for required_key in REQUIRED_KEYS:
-        if required_key not in req:
-            return jsonify({"msg": "missing one or more required keys"}), 404
 
-    if req[KEY_JOB_TYPE] == VALUE_JOB_IMG2IMG and REFERENCE_IMG not in req:
+    # only checks required key for non-restoration jobs
+    if req.get(KEY_JOB_TYPE, None) != VALUE_JOB_RESTORATION:
+        for required_key in REQUIRED_KEYS:
+            if required_key not in req:
+                return jsonify({"msg": "missing one or more required keys"}), 404
+
+    if (
+        req[KEY_JOB_TYPE]
+        in [VALUE_JOB_IMG2IMG, VALUE_JOB_INPAINTING, VALUE_JOB_RESTORATION]
+        and REFERENCE_IMG not in req
+    ):
         return jsonify({"msg": "missing reference image"}), 404
+
+    if req[KEY_JOB_TYPE] == VALUE_JOB_INPAINTING and MASK_IMG not in req:
+        return jsonify({"msg": "missing mask image"}), 404
 
     if KEY_LANGUAGE in req and req[KEY_LANGUAGE] not in SUPPORTED_LANGS:
         return jsonify({"msg": f"not suporting {req[KEY_LANGUAGE]}"}), 404
@@ -74,6 +90,7 @@ def add_job():
 
 
 @app.route("/cancel_job", methods=["POST"])
+@limiter.limit("1/second")
 def cancel_job():
     req = request.get_json()
     if APIKEY not in req:
@@ -114,6 +131,7 @@ def cancel_job():
 
 
 @app.route("/get_jobs", methods=["POST"])
+@limiter.limit("1/second")
 def get_jobs():
     req = request.get_json()
     if APIKEY not in req:
@@ -127,10 +145,24 @@ def get_jobs():
 
     if UUID in req:
         jobs = database.get_jobs(
-            job_uuid=req[UUID], apikey=req[APIKEY], limit_count=job_count_limit
+            job_uuid=req[UUID],
+            apikey=req[APIKEY],
+            job_types=req.get[KEY_JOB_TYPE].split(",") if req.get(KEY_JOB_TYPE, "") else [],
+            limit_count=job_count_limit,
         )
     else:
-        jobs = database.get_jobs(apikey=req[APIKEY], limit_count=job_count_limit)
+        jobs = database.get_jobs(
+            apikey=req[APIKEY],
+            job_types=req.get[KEY_JOB_TYPE].split(",") if req.get(KEY_JOB_TYPE, "") else [],
+            limit_count=job_count_limit,
+        )
+
+    for job in jobs:
+        # load image to job if has one
+        for key in [BASE64IMAGE, REFERENCE_IMG, MASK_IMG]:
+            if key in job and "base64" not in job[key]:
+                data = load_image(job[key], to_base64=True)
+                job[key] = data if data else IMAGE_NOT_FOUND_BASE64
 
     return jsonify({"jobs": jobs})
 
@@ -143,12 +175,26 @@ def random_jobs():
 
     jobs = database.get_random_jobs(limit_count=job_count_limit)
 
+    for job in jobs:
+        # load image to job if has one
+        for key in [BASE64IMAGE, REFERENCE_IMG, MASK_IMG]:
+            if key in job and "base64" not in job[key]:
+                data = load_image(job[key], to_base64=True)
+                job[key] = data if data else IMAGE_NOT_FOUND_BASE64
+
     return jsonify({"jobs": jobs})
 
 
 @app.route("/")
+@limiter.limit("1/second")
 def index():
     return render_template("index.html")
+
+
+@app.route("/restoration")
+@limiter.limit("1/second")
+def restoration():
+    return render_template("restoration.html")
 
 
 def main(args):

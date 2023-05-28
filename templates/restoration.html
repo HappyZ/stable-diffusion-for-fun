@@ -1,0 +1,378 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+
+    <title>{{ config.TITLE }}</title>
+    <meta name="description" content="Restoration Online">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href="{{ url_for('static',filename='bootstrap.min.css') }}" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <nav class="navbar navbar-expand-lg bg-body-tertiary">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">{{ config.TITLE }}</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" data-en_XX="Home" data-zh_CN="主页" href=".">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" data-en_XX="Restoration" data-zh_CN="图像修复"
+                                href="restoration">Restoration</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-en_XX="Help" data-zh_CN="帮助">Help</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-en_XX="About" data-zh_CN="关于">About</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <label class="input-group-text" for="language" data-en_XX="Language"
+                            data-zh_CN="语言">Language</label>
+                        <select class="form-select" id="language">
+                            <option value="zh_CN">中文（测试）</option>
+                            <option selected value="en_XX">English</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <span data-en_XX="Restoration" data-zh_CN="图像修复">Restoration</span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col mb-3">
+                        <div class="input-group">
+                            <label for="apiKey" class="input-group-text" data-en_XX="API Key" data-zh_CN="API 密钥">API
+                                Key</label>
+                            <input type="password" class="form-control" id="apiKey" value="">
+                            <div class="input-group-text">
+                                <input class="form-check-input" type="checkbox" value="" id="isPrivate">
+                            </div>
+                            <label for="isPrivate" class="input-group-text" data-en_XX="Generate Private Images"
+                                data-zh_CN="生成非公开图片">Generate Private Images</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="input-group input-group-sm">
+                            <label for="restorationUpscale" class="input-group-text" data-en_XX="Upscale"
+                                data-zh_CN="放大倍数">Upscale</label>
+                            <input type="number" class="form-control" id="restorationUpscale"
+                                aria-describedby="upscaleHelp" placeholder="1" min="1" max="8">
+                        </div>
+                        <div id="upscaleHelp" class="form-text" data-en_XX="Upsampling scale of the image"
+                            data-zh_CN="将图像放大多少倍">
+                            Upsampling scale of the image
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="input-group input-group-sm">
+                            <label for="restorationWeight" class="input-group-text" data-en_XX="Weight"
+                                data-zh_CN="比重">Weight</label>
+                            <input type="number" class="form-control" id="restorationWeight"
+                                aria-describedby="weightHelp" placeholder="0.5" min="0" max="1">
+                        </div>
+                        <div id="weightHelp" class="form-text" data-en_XX="Adjustable weights" data-zh_CN="0-1比重">
+                            Adjustable weights
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header" data-en_XX="1. Choose Original Image" data-zh_CN="1. 选择原图">
+                                1. Choose Original Image
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <button id="restoreUploadImg" class="btn btn-primary mb-3" data-en_XX="Upload image"
+                                        data-zh_CN="上传一张图片">Upload
+                                        image</button>
+                                </div>
+                                <div class="row">
+                                    <button id="newRestorationJob" class="btn btn-primary mb-3"
+                                        data-en_XX="Let's Go with Image Below!" data-zh_CN="修复下面的图！">Restore Image
+                                        Below!</button>
+                                </div>
+                            </div>
+                            <img class="card-img-bottom" id="restoreOriginalImg">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header" data-en_XX="2. Result" data-zh_CN="2. 结果">
+                                2. Result
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span id="restorationJobUUID"></span>
+                                        <span class="badge bg-primary rounded-pill" data-en_XX="Job UUID"
+                                            data-zh_CN="图片唯一识别码">Job UUID</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span id="restorationStatus"></span>
+                                        <span class="badge bg-primary rounded-pill" data-en_XX="Job Status"
+                                            data-zh_CN="生成状态">Job Status</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <img class="card-img-bottom" id="restorationImg">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <span data-en_XX="History" data-zh_CN="历史">History</span>
+            </div>
+            <div class="card-body">
+                <div class="input-group mb-3">
+                    <label for="lookupUUID" class="input-group-text" data-en_XX="UUID (Optional)"
+                        data-zh_CN="图片唯一识别码（选填）">UUID (Optional)</label>
+                    <input type="text" class="form-control" id="lookupUUID" value="">
+                    <button id="getJobHistory" class="btn btn-primary" data-en_XX="Get Job(s)" data-zh_CN="搜索历史">Get
+                        Job(s)</button>
+                </div>
+                <div id="joblist"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CSS code -->
+    <style>
+    </style>
+    <script src="{{ url_for('static',filename='jquery-3.6.1.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='jsketch.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='jquery.sketchable.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='jquery.sketchable.memento.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='masonry.pkgd.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='imagesloaded.pkgd.min.js') }}"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('input[id]').on('input', function () {
+                var input = $(this);
+                var key = input.attr('id');
+                var value = input.val();
+                if (input.attr('type') == "checkbox") {
+                    value = input.is(":checked");
+                }
+                localStorage.setItem(key, value);
+            }).each(function () {
+                var input = $(this);
+                var key = input.attr('id');
+                var value = localStorage.getItem(key);
+                if (input.attr('type') == "checkbox") {
+                    input.prop('checked', value == "true");
+                } else if (value) {
+                    input.val(value);
+                }
+            });
+
+            // Define the function to update the text based on the selected language
+            function updateText(language) {
+                $("[data-" + language + "]").each(function () {
+                    $(this).text($(this).data(language.toLowerCase()));
+                });
+            }
+
+            // Listen for changes to the select element
+            $("#language").change(function () {
+                // Get the newly selected value
+                var newLanguage = $(this).val();
+
+                // Store the selected value in cache
+                localStorage.setItem("selectedLanguage", newLanguage);
+
+                // Update the text based on the selected language
+                updateText(newLanguage);
+            });
+
+            // Get the selected value from cache (if it exists)
+            var cachedLanguage = localStorage.getItem("selectedLanguage");
+            if (cachedLanguage) {
+                // Set the selected value
+                $("#language").val(cachedLanguage);
+
+                // Update the text based on the selected language
+                updateText(cachedLanguage);
+            }
+
+            var restoreOriginalImgData = null;
+            $("#restoreUploadImg").click(function () {
+                var input = $("<input type='file' accept='image/*'>").on("change", function () {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        restoreOriginalImgData = e.target.result;
+                        $("#restoreOriginalImg").attr("src", restoreOriginalImgData);
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                });
+                input.click();
+            });
+
+            function waitForImage(apikeyVal, uuidValue) {
+                // Wait until image is done
+                $.ajax({
+                    type: 'POST',
+                    url: '/get_jobs',
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    data: JSON.stringify({ 'apikey': apikeyVal, 'uuid': uuidValue }),
+                    success: function (response) {
+                        console.log(response);
+                        if (response.jobs.length == 1) {
+                            if (response.jobs[0].type == 'restoration') {
+                                $('#restorationStatus').html(response.jobs[0].status);
+                                $('#restorationJobUUID').html(uuidValue);
+                                if (response.jobs[0].status == "done") {
+                                    $('#restorationImg').attr('src', response.jobs[0].img);
+                                    return;
+                                }
+                                if (response.jobs[0].status == "failed") {
+                                    return;
+                                }
+                            }
+                        }
+                        setTimeout(function () { waitForImage(apikeyVal, uuidValue); }, 1500);  // refresh every 1.5 second
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(error);
+                        setTimeout(function () { waitForImage(apikeyVal, uuidValue); }, 1500);  // refresh every 1.5 second
+                    }
+                });
+            }
+
+            function submitJob(formData, uuidSelector, statusSelector) {
+                $.ajax({
+                    type: 'POST',
+                    url: '/add_job',
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    data: JSON.stringify(formData),
+                    success: function (response) {
+                        if (response.uuid) {
+                            $(uuidSelector).html(response.uuid);
+                        }
+                        $(statusSelector).html('Submitting new job..');
+                        waitForImage(formData.apikey, response.uuid);
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle error response
+                        console.log(xhr.responseText);
+                        $(statusSelector).html('Failed');
+                    }
+                });
+            }
+
+            $('#newRestorationJob').click(function (e) {
+                e.preventDefault(); // Prevent the default form submission
+
+                if (restoreOriginalImgData == null) {
+                    alert("No image cached");
+                    return;
+                }
+
+                // Helper function to get input field value or a default value if empty
+                function getInputValue(id, defaultValue) {
+                    var value = $(id).val().trim();
+                    return value !== '' ? value : defaultValue;
+                }
+
+                // Validate input field values
+                var restorationUpscaleVal = parseInt(getInputValue('#restorationUpscale', '1'));
+                var restorationWeightVal = parseFloat(getInputValue('#restorationWeight', '0.5'));
+                var apikeyVal = $('#apiKey').val();
+
+                var formData = {
+                    'apikey': apikeyVal,
+                    'type': 'restoration',
+                    'ref_img': restoreOriginalImgData,
+                    'steps': restorationUpscaleVal,  // reuse sd keys
+                    'strength': restorationWeightVal,  // reuse sd keys
+                    'lang': $("#language option:selected").val(),
+                    'is_private': $('#isPrivate').is(":checked") ? 1 : 0
+                };
+
+                submitJob(formData, '#restorationJobUUID', '#restorationStatus');
+            });
+
+            $('#getJobHistory').click(function () {
+                var apikeyValue = $('#apiKey').val();
+                var uuidValue = $('#lookupUUID').val();
+                $.ajax({
+                    type: 'POST',
+                    url: '/get_jobs',
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    data: JSON.stringify({ 'apikey': apikeyValue, 'uuid': uuidValue, 'type': 'restoration' }),
+                    success: function (response) {
+                        var jobsLength = response.jobs.length;
+                        if (jobsLength == 0) {
+                            $('#joblist').html("found nothing");
+                            return;
+                        }
+
+                        var $joblist = $('#joblist');
+                        var $grid = $('<div class="row"></div>');
+                        $joblist.html($grid);
+                        for (var i = 0; i < jobsLength; i++) {
+                            console.log(response.jobs[i]);
+                            var isPrivate = response.jobs[i].is_private;
+                            var element = $("<div class='col col-sm-6 col-md-6 col-lg-4 mb-3'><div class='card'>" +
+                                (response.jobs[i].img ? ("<img src='" + response.jobs[i].img + "' class='card-img-top'><div class='card-body'>") : "") +
+                                "<ul class='list-group list-group-flush'>" +
+                                "<li class='list-group-item'>status: " + response.jobs[i].status + "</li>" +
+                                "<li class='list-group-item'>scale: " + response.jobs[i].steps + "</li>" +
+                                "<li class='list-group-item'>weight: " + response.jobs[i].strength + "</li>" +
+                                "<li class='list-group-item'>uuid: " + response.jobs[i].uuid + "</li>" +
+                                "<li class='list-group-item'>w x h: " + response.jobs[i].width + " x " + response.jobs[i].height + "</li>" +
+                                "</ul></div>" +
+                                (response.jobs[i].ref_img ? ("<img src='" + response.jobs[i].ref_img + "' class='card-img-bottom'>") : "") +
+                                "</div></div>");
+                            $grid.append(element);
+                        };
+                        $grid.imagesLoaded().progress(function () {
+                            $grid.masonry({
+                                itemSelector: '.col',
+                                columnWidth: '.col',
+                                percentPosition: true
+                            });
+                        });
+
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle error response
+                        console.log(xhr.responseText);
+                        $('#joblist').html("found nothing");
+                    }
+                });
+            });
+
+        });
+    </script>
+</body>
+
+</html>

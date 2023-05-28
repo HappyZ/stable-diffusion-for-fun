@@ -23,7 +23,11 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link active" data-en_XX="Home" data-zh_CN="主页">Home</a>
+                            <a class="nav-link active" data-en_XX="Home" data-zh_CN="主页" href=".">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-en_XX="Restoration" data-zh_CN="图像修复"
+                                href="restoration">Restoration</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" data-en_XX="Help" data-zh_CN="帮助">Help</a>
@@ -38,7 +42,7 @@
                         <label class="input-group-text" for="language" data-en_XX="Language"
                             data-zh_CN="语言">Language</label>
                         <select class="form-select" id="language">
-                            <option value="zh_CN">中文</option>
+                            <option value="zh_CN">中文（测试）</option>
                             <option selected value="en_XX">English</option>
                         </select>
                     </div>
@@ -496,12 +500,11 @@
                             }
                         }
                     }
-                    setTimeout(function () { waitForImage(apikeyVal, uuidValue); }, 1500);  // refresh every second
+                    setTimeout(function () { waitForImage(apikeyVal, uuidValue); }, 1500);  // refresh every 1.5 second
                 },
                 error: function (xhr, status, error) {
-                    // Handle error response
-                    console.log(xhr.responseText);
-                    $('#txt2ImgStatus').html('failed');
+                    console.log(error);
+                    setTimeout(function () { waitForImage(apikeyVal, uuidValue); }, 1500);  // refresh every 1.5 second
                 }
             });
         }
@@ -631,16 +634,12 @@
             $('#getJobHistory').click(function () {
                 var apikeyValue = $('#apiKey').val();
                 var uuidValue = $('#lookupUUID').val();
-                if (uuidValue == null) {
-                    alert("no UUID specified");
-                    return;
-                }
                 $.ajax({
                     type: 'POST',
                     url: '/get_jobs',
                     contentType: 'application/json; charset=utf-8',
                     dataType: 'json',
-                    data: JSON.stringify({ 'apikey': apikeyValue, 'uuid': uuidValue }),
+                    data: JSON.stringify({ 'apikey': apikeyValue, 'uuid': uuidValue, 'type': 'txt,img,inpaint' }),
                     success: function (response) {
                         var jobsLength = response.jobs.length;
                         if (jobsLength == 0) {
@@ -662,8 +661,9 @@
                                 "<li class='list-group-item'>seed: " + response.jobs[i].seed + "</li>" +
                                 "<li class='list-group-item'>uuid: " + response.jobs[i].uuid + "</li>" +
                                 "<li class='list-group-item'>w x h: " + response.jobs[i].width + " x " + response.jobs[i].height + "</li>" +
-                                "</ul>" +
-                                "</div></div></div>");
+                                "</ul></div>" +
+                                (response.jobs[i].ref_img ? ("<img src='" + response.jobs[i].ref_img + "' class='card-img-bottom'>") : "") +
+                                "</div></div>");
                             // Add event handler for click to toggle blurriness
                             if (isPrivate === 1) {
                                 element.find('.card').addClass('private-card');

@@ -119,11 +119,19 @@ class Inpainting:
         self.__logger.info("current seed: {}".format(seed))
 
         if isinstance(reference_image, str):
-            reference_image = base64_to_image(reference_image).convert("RGB")
+            if "base64" in reference_image:
+                reference_image = base64_to_image(reference_image).convert("RGB")
+            else:
+                # is filepath
+                reference_image = load_image(reference_image).convert("RGB")
             reference_image.thumbnail((config.get_width(), config.get_height()))
 
         if isinstance(mask_image, str):
-            mask_image = base64_to_image(mask_image).convert("RGB")
+            if "base64" in mask_image:
+                mask_image = base64_to_image(mask_image).convert("RGB")
+            else:
+                # is filepath
+                mask_image = load_image(mask_image).convert("RGB")
             # assume mask image and reference image size ratio is the same
             if mask_image.size[0] < reference_image.size[0]:
                 mask_image = mask_image.resize(reference_image.size)

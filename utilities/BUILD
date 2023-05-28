@@ -28,6 +28,17 @@ py_library(
 )
 
 py_library(
+    name="external",
+    srcs=["external.py"],
+    deps=[
+        ":logger",
+        ":config",
+        ":constants",
+        ":images",
+    ],
+)
+
+py_library(
     name="envvar",
     srcs=["envvar.py"],
 )

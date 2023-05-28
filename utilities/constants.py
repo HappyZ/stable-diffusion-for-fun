@@ -32,6 +32,7 @@ VALUE_JOB_IMG2IMG = "img"
 REFERENCE_IMG = "ref_img"
 MASK_IMG = "mask_img"
 VALUE_JOB_INPAINTING = "inpaint"
+VALUE_JOB_RESTORATION = "restoration"
 
 KEY_LANGUAGE = "lang"
 VALUE_LANGUAGE_ZH_CN = "zh_CN"

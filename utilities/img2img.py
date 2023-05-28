@@ -15,6 +15,7 @@ from utilities.memory import empty_memory_cache
 from utilities.model import Model
 from utilities.times import get_epoch_now
 from utilities.images import image_to_base64
+from utilities.images import load_image
 from utilities.images import base64_to_image
 
 
@@ -116,7 +117,11 @@ class Img2Img:
         self.__logger.info("current seed: {}".format(seed))
 
         if isinstance(reference_image, str):
-            reference_image = base64_to_image(reference_image).convert("RGB")
+            if "base64" in reference_image:
+                reference_image = base64_to_image(reference_image).convert("RGB")
+            else:
+                # is filepath
+                reference_image = load_image(reference_image).convert("RGB")
             reference_image.thumbnail((config.get_width(), config.get_height()))
 
         (

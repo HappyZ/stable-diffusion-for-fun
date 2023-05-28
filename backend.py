@@ -19,6 +19,7 @@ from utilities.constants import KEY_JOB_TYPE
 from utilities.constants import VALUE_JOB_TXT2IMG
 from utilities.constants import VALUE_JOB_IMG2IMG
 from utilities.constants import VALUE_JOB_INPAINTING
+from utilities.constants import VALUE_JOB_RESTORATION
 from utilities.constants import REFERENCE_IMG
 from utilities.constants import MASK_IMG
 
@@ -32,6 +33,7 @@ from utilities.img2img import Img2Img
 from utilities.inpainting import Inpainting
 from utilities.times import wait_for_seconds
 from utilities.memory import empty_memory_cache
+from utilities.external import gfpgan
 
 
 logger = Logger(name=LOGGER_NAME_BACKEND)
@@ -62,7 +64,7 @@ def load_model(logger: Logger, use_gpu: bool, reduce_memory_usage: bool) -> Mode
     return model
 
 
-def backend(model, is_debugging: bool):
+def backend(model, gfpgan_folderpath, is_debugging: bool):
     text2img = Text2Img(model, logger=Logger(name=LOGGER_NAME_TXT2IMG))
     text2img.breakfast()
     img2img = Img2Img(model, logger=Logger(name=LOGGER_NAME_IMG2IMG))
@@ -87,10 +89,14 @@ def backend(model, is_debugging: bool):
                 {KEY_JOB_STATUS: VALUE_JOB_RUNNING}, job_uuid=next_job[UUID]
             )
 
-        prompt = next_job[KEY_PROMPT]
-        negative_prompt = next_job[KEY_NEG_PROMPT]
+        prompt = next_job.get(KEY_PROMPT, "")
+        negative_prompt = next_job.get(KEY_NEG_PROMPT, "")
 
-        if KEY_LANGUAGE in next_job:
+        if (
+            next_job[KEY_JOB_TYPE]
+            in [VALUE_JOB_IMG2IMG, VALUE_JOB_INPAINTING, VALUE_JOB_TXT2IMG]
+            and KEY_LANGUAGE in next_job
+        ):
             if VALUE_LANGUAGE_EN != next_job[KEY_LANGUAGE]:
                 logger.info(
                     f"found {next_job[KEY_LANGUAGE]}, translate prompt and negative prompt first"
@@ -130,6 +136,13 @@ def backend(model, is_debugging: bool):
                     mask_image=mask_img,
                     config=config,
                 )
+            elif next_job[KEY_JOB_TYPE] == VALUE_JOB_RESTORATION:
+                ref_img_filepath = next_job[REFERENCE_IMG]
+                result_dict = gfpgan(gfpgan_folderpath, next_job[UUID], ref_img_filepath, config=config, logger=logger)
+                if not result_dict:
+                    raise ValueError("failed to run gfpgan")
+            else:
+                raise ValueError("unrecognized job type")
         except KeyboardInterrupt:
             break
         except BaseException as e:
@@ -154,7 +167,7 @@ def main(args):
     database.connect(args.db)
 
     model = load_model(logger, args.gpu, args.reduce_memory_usage)
-    backend(model, args.debug)
+    backend(model, args.gfpgan, args.debug)
 
     database.safe_disconnect()
 
@@ -178,6 +191,14 @@ if __name__ == "__main__":
         "--reduce-memory-usage",
         action="store_true",
         help="Reduce memory usage when using GPU",
+    )
+
+    # Add an argument to reduce memory usage
+    parser.add_argument(
+        "--gfpgan",
+        type=str,
+        default="",
+        help="GFPGAN folderpath",
     )
 
     # Add an argument to set the path of the database file

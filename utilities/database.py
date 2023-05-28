@@ -12,6 +12,7 @@ from utilities.constants import KEY_JOB_TYPE
 from utilities.constants import VALUE_JOB_TXT2IMG
 from utilities.constants import VALUE_JOB_IMG2IMG
 from utilities.constants import VALUE_JOB_INPAINTING
+from utilities.constants import VALUE_JOB_RESTORATION
 from utilities.constants import KEY_JOB_STATUS
 from utilities.constants import VALUE_JOB_PENDING
 from utilities.constants import VALUE_JOB_DONE
@@ -26,7 +27,6 @@ from utilities.constants import INTERNAL_KEYS
 from utilities.constants import REFERENCE_IMG
 from utilities.constants import MASK_IMG
 from utilities.constants import BASE64IMAGE
-from utilities.constants import IMAGE_NOT_FOUND_BASE64
 
 from utilities.constants import HISTORY_TABLE_NAME
 from utilities.constants import USERS_TABLE_NAME
@@ -35,7 +35,6 @@ from utilities.logger import DummyLogger
 from utilities.times import get_epoch_now
 from utilities.times import epoch_to_string
 from utilities.images import save_image
-from utilities.images import load_image
 
 
 # Function to acquire a lock on the database file
@@ -130,7 +129,7 @@ class Database:
         return result[0]
 
     def get_random_jobs(self, limit_count=0) -> list:
-        query = f"SELECT {', '.join(ANONYMOUS_KEYS)} FROM {HISTORY_TABLE_NAME} WHERE {KEY_JOB_STATUS} = ? AND {KEY_IS_PRIVATE} = ? AND rowid IN (SELECT rowid FROM {HISTORY_TABLE_NAME} ORDER BY RANDOM() LIMIT ?)"
+        query = f"SELECT {', '.join(ANONYMOUS_KEYS)} FROM {HISTORY_TABLE_NAME} WHERE {KEY_JOB_STATUS} = ? AND {KEY_IS_PRIVATE} = ? AND rowid IN (SELECT rowid FROM {HISTORY_TABLE_NAME} ORDER BY RANDOM() LIMIT ?) AND {KEY_JOB_TYPE} IN ({VALUE_JOB_IMG2IMG, VALUE_JOB_INPAINTING, VALUE_JOB_RESTORATION})"
 
         # execute the query and return the results
         c = self.get_cursor()
@@ -143,20 +142,17 @@ class Database:
                 for i in range(len(ANONYMOUS_KEYS))
                 if row[i] is not None
             }
-            # load image to job if has one
-            for key in [BASE64IMAGE, REFERENCE_IMG, MASK_IMG]:
-                if key in job and "base64" not in job[key]:
-                    data = load_image(job[key], to_base64=True)
-                    job[key] = data if data else IMAGE_NOT_FOUND_BASE64
             jobs.append(job)
 
         return jobs
 
-    def get_jobs(self, job_uuid="", apikey="", job_status="", limit_count=0) -> list:
+    def get_jobs(
+        self, job_uuid="", apikey="", job_status="", job_types=[], limit_count=0
+    ) -> list:
         """
         Get a list of jobs from the HISTORY_TABLE_NAME table based on optional filters.
 
-        If `job_uuid` or `apikey` or `job_status` is provided, the query will include that filter.
+        If `job_uuid` or `apikey` or `job_status` or `job_type` is provided, the query will include that filter.
 
         Returns a list of jobs matching the filters provided.
         """
@@ -172,6 +168,11 @@ class Database:
         if job_status:
             query_filters.append(f"{KEY_JOB_STATUS} = ?")
             values.append(job_status)
+        if job_types:
+            query_filters.append(
+                f"{KEY_JOB_TYPE} IN ({', '.join(['?' for _ in job_types])})"
+            )
+            values += job_types
 
         columns = OUTPUT_ONLY_KEYS + REQUIRED_KEYS + OPTIONAL_KEYS
         query = f"SELECT {', '.join(columns)} FROM {HISTORY_TABLE_NAME}"
@@ -190,11 +191,6 @@ class Database:
             job = {
                 columns[i]: row[i] for i in range(len(columns)) if row[i] is not None
             }
-            # load image to job if has one
-            for key in [BASE64IMAGE, REFERENCE_IMG, MASK_IMG]:
-                if key in job and "base64" not in job[key]:
-                    data = load_image(job[key], to_base64=True)
-                    job[key] = data if data else IMAGE_NOT_FOUND_BASE64
             jobs.append(job)
 
         return jobs
@@ -254,6 +250,9 @@ class Database:
 
         Returns True if the update was successful, otherwise False.
         """
+        if not job_dict:
+            return False
+
         # store image to job_dict if has one
         if (
             self.__image_output_folder
