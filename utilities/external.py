@@ -9,7 +9,6 @@ from utilities.config import Config
 from utilities.logger import DummyLogger
 from utilities.images import image_to_base64
 from utilities.images import load_image
-from utilities.images import save_image
 from utilities.images import base64_to_image
 
 
