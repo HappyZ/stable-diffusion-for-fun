@@ -138,7 +138,13 @@ def backend(model, gfpgan_folderpath, is_debugging: bool):
                 )
             elif next_job[KEY_JOB_TYPE] == VALUE_JOB_RESTORATION:
                 ref_img_filepath = next_job[REFERENCE_IMG]
-                result_dict = gfpgan(gfpgan_folderpath, next_job[UUID], ref_img_filepath, config=config, logger=logger)
+                result_dict = gfpgan(
+                    gfpgan_folderpath,
+                    next_job[UUID],
+                    ref_img_filepath,
+                    config=config,
+                    logger=logger,
+                )
                 if not result_dict:
                     raise ValueError("failed to run gfpgan")
             else:

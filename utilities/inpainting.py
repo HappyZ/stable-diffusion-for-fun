@@ -43,17 +43,17 @@ class Inpainting:
         self.__logger.info(f"model has max length of {self.__max_length}")
 
     def __token_limit_workaround(self, prompt: str, negative_prompt: str = ""):
-        count_prompt = len(re.split("[ ,]+", prompt))
-        count_negative_prompt = len(re.split("[ ,]+", negative_prompt))
+        token_est_count_prompt = len(prompt) / 4
+        token_est_count_neg_prompt = len(negative_prompt) / 4
 
-        if count_prompt < 77 and count_negative_prompt < 77:
+        if token_est_count_prompt < 77 and token_est_count_neg_prompt < 77:
             return prompt, None, negative_prompt, None
 
         self.__logger.info(
             "using workaround to generate embeds instead of direct string"
         )
 
-        if count_prompt >= count_negative_prompt:
+        if token_est_count_prompt >= token_est_count_neg_prompt:
             input_ids = self.model.inpaint_pipeline.tokenizer(
                 prompt, return_tensors="pt", truncation=False
             ).input_ids.to(self.__device)

@@ -281,7 +281,7 @@
                                         <div class="form-row">
                                             <label for="inpaint-strike-size" class="form-label" data-en_XX="Strike Size"
                                                 data-zh_CN="笔触大小">Strike Size</label>
-                                            <input type="range" class="form-range" min="1" max="30"
+                                            <input type="range" class="form-range" min="1" max="50"
                                                 id="inpaint-strike-size">
                                             <output id='range-value'></output>
                                         </div>
@@ -689,9 +689,7 @@
 
                     },
                     error: function (xhr, status, error) {
-                        // Handle error response
-                        console.log(xhr.responseText);
-                        $('#joblist').html("found nothing");
+                        $('#joblist').html("try again later");
                     }
                 });
             });
