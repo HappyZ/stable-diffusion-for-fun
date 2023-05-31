@@ -157,7 +157,6 @@ class Model:
             pipeline.to("cuda")
         self.inpaint_pipeline = pipeline
         self.__default_inpaint_scheduler = pipeline.scheduler
-
         empty_memory_cache()
 
     def load_all(self):

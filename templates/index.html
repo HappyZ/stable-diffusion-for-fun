@@ -321,7 +321,7 @@
                                             </li>
                                         </ul>
                                     </div>
-                                    <img class="card-img-bottom" id="inpaintImg">
+                                    <img class="card-img-bottom downloadable-img" id="inpaintImg">
                                 </div>
                             </div>
                         </div>
@@ -339,7 +339,7 @@
                                                 data-en_XX="Let's Go!" data-zh_CN="生成图片！">Let's Go!</button>
                                         </div>
                                     </div>
-                                    <img class="card-img-bottom" id="reference-img">
+                                    <img class="card-img-bottom downloadable-img" id="reference-img">
                                 </div>
                             </div>
                             <div class="col-md-8">
@@ -369,7 +369,7 @@
                                             </li>
                                         </ul>
                                     </div>
-                                    <img class="card-img-bottom" id="txt2ImgImg">
+                                    <img class="card-img-bottom downloadable-img" id="txt2ImgImg">
                                 </div>
                             </div>
                         </div>
@@ -454,6 +454,13 @@
     <script src="{{ url_for('static',filename='imagesloaded.pkgd.min.js') }}"></script>
 
     <script>
+        function downloadImage(url, filename) {
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+        }
+
         function waitForImage(apikeyVal, uuidValue) {
             // Wait until image is done
             $.ajax({
@@ -470,7 +477,7 @@
                             $('#txt2ImgSeed').html(response.jobs[0].seed);
                             $('#txt2ImgJobUUID').html(uuidValue);
                             if (response.jobs[0].status == "done") {
-                                $('#txt2ImgImg').attr('src', response.jobs[0].img);
+                                $('#txt2ImgImg').attr('src', response.jobs[0].img).attr('download', uuidValue + ".png");
                                 return;
                             }
                             if (response.jobs[0].status == "failed") {
@@ -481,7 +488,7 @@
                             $('#img2ImgSeed').html(response.jobs[0].seed);
                             $('#img2ImgJobUUID').html(uuidValue);
                             if (response.jobs[0].status == "done") {
-                                $('#img2ImgImg').attr('src', response.jobs[0].img);
+                                $('#img2ImgImg').attr('src', response.jobs[0].img).attr('download', uuidValue + ".png");
                                 return;
                             }
                             if (response.jobs[0].status == "failed") {
@@ -492,7 +499,7 @@
                             $('#inpaintSeed').html(response.jobs[0].seed);
                             $('#inpaintJobUUID').html(uuidValue);
                             if (response.jobs[0].status == "done") {
-                                $('#inpaintImg').attr('src', response.jobs[0].img);
+                                $('#inpaintImg').attr('src', response.jobs[0].img).attr('download', uuidValue + ".png");
                                 return;
                             }
                             if (response.jobs[0].status == "failed") {
@@ -611,6 +618,11 @@
                 }
             });
 
+            $(document).on('click', '.downloadable-img', function () {
+                var img = $(this);
+                downloadImage(img.attr('src'), img.attr('download') ? img.attr('download'): 'result.png');
+            });
+
             // Cache variable to store the selected image data for img2img
             var imageData = null;
 
@@ -653,7 +665,7 @@
                         for (var i = 0; i < jobsLength; i++) {
                             var isPrivate = response.jobs[i].is_private;
                             var element = $("<div class='col col-sm-6 col-md-6 col-lg-4 mb-3'><div class='card'>" +
-                                (response.jobs[i].img ? ("<img src='" + response.jobs[i].img + "' class='card-img-top'><div class='card-body'>") : "") +
+                                (response.jobs[i].img ? ("<img src='" + response.jobs[i].img + "' download='" + response.jobs[i].uuid + ".png' class='card-img-top downloadable-img'><div class='card-body'>") : "") +
                                 "<ul class='list-group list-group-flush'>" +
                                 "<li class='list-group-item'>status: " + response.jobs[i].status + "</li>" +
                                 "<li class='list-group-item'>prompt: " + parsePromptString(response.jobs[i].prompt, false) + "</li>" +
@@ -670,7 +682,7 @@
                                 element.append("<div class='reveal-text'><svg viewBox='0 0 16 16'><path d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/></svg></div>");
 
                                 element.on('click', function (event) {
-                                    if ($(event.target).hasClass('negative-prompt-example') || $(event.target).hasClass('prompt-example')) {
+                                    if ($(event.target).hasClass('negative-prompt-example') || $(event.target).hasClass('prompt-example') || $(event.target).hasClass('downloadable-img')) {
                                         return; // Ignore the click event for those elements
                                     }
                                     $(this).find('.card').toggleClass('private-card');
@@ -712,7 +724,7 @@
                         $joblist.html($grid);
                         for (var i = 0; i < jobsLength; i++) {
                             var element = ("<div class='col col-sm-6 col-md-6 col-lg-4 mb-3'><div class='card'>" +
-                                (response.jobs[i].img ? ("<img src='" + response.jobs[i].img + "' class='card-img-top'><div class='card-body'>") : "") +
+                                (response.jobs[i].img ? ("<img src='" + response.jobs[i].img + "' class='card-img-top downloadable-img'><div class='card-body'>") : "") +
                                 "<ul class='list-group list-group-flush'>" +
                                 "<li class='list-group-item'>prompt: " + parsePromptString(response.jobs[i].prompt, false) + "</li>" +
                                 "<li class='list-group-item'>neg prompt: " + parsePromptString(response.jobs[i].neg_prompt, true) + "</li>" +
