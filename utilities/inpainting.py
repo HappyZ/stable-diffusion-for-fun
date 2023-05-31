@@ -15,6 +15,7 @@ from utilities.memory import empty_memory_cache
 from utilities.model import Model
 from utilities.times import get_epoch_now
 from utilities.images import image_to_base64
+from utilities.images import load_image
 from utilities.images import base64_to_image
 
 
