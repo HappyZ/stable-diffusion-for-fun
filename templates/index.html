@@ -90,7 +90,7 @@
                         data-zh_CN="非必填。形容这张图不长什么样。">Optional. Describe what's NOT the image.</div>
                 </div>
                 <div class="row">
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-2 mb-3">
                         <div class="input-group input-group-sm">
                             <label for="inputSeed" class="input-group-text" data-en_XX="Seed"
                                 data-zh_CN="随机数">Seed</label>
@@ -101,7 +101,7 @@
                             Leave it empty or set 0 to use a random seed
                         </div>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-2 mb-3">
                         <div class="input-group input-group-sm">
                             <label for="guidanceScale" class="input-group-text" data-en_XX="Guidance"
                                 data-zh_CN="指示强度">Guidance</label>
@@ -112,6 +112,20 @@
                             data-en_XX="20 = follow prompt, 7 = creative/artistic. Lower it if you see bad images."
                             data-zh_CN="20 = 提示词重要，7 = 更有创造性。如果结果较差，适当降低该数。">
                             20 = follow prompt, 7 = creative/artistic. Lower it if you see bad images.
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="input-group input-group-sm">
+                            <label for="strength" class="input-group-text" data-en_XX="Strength"
+                                data-zh_CN="改变程度">Strength</label>
+                            <input type="number" class="form-control" id="inputStrength"
+                                aria-describedby="inputStrengthHelp" placeholder="0.5" min="0"
+                                max="1">
+                        </div>
+                        <div id="inputStrengthHelp" class="form-text"
+                            data-en_XX="How different from the original image. 0 means the same, 1 means very different."
+                            data-zh_CN="和原图有多么的不同。0指一样，1指非常不一样。">How different from the
+                            original image
                         </div>
                     </div>
                     <div class="col-md-2 mb-3">
@@ -179,20 +193,6 @@
                                             <button id="upload-img" class="btn btn-primary mb-3"
                                                 data-en_XX="Upload image" data-zh_CN="上传一张图片">Upload
                                                 image</button>
-                                        </div>
-                                        <div class="row mb-3">
-                                            <div class="input-group input-group-sm">
-                                                <label for="strength" class="input-group-text" data-en_XX="Strength"
-                                                    data-zh_CN="改变程度">Strength</label>
-                                                <input type="number" class="form-control" id="inputStrength"
-                                                    aria-describedby="inputStrengthHelp" placeholder="0.5" min="0"
-                                                    max="1">
-                                            </div>
-                                            <div id="inputStrengthHelp" class="form-text"
-                                                data-en_XX="How different from the original image. 0 means the same, 1 means very different."
-                                                data-zh_CN="和参照图有多么的不同。0指一样，1指非常不一样。">How different from the
-                                                original image
-                                            </div>
                                         </div>
                                         <div class="row">
                                             <button id="newImg2ImgJob" class="btn btn-primary mb-3"
@@ -818,7 +818,7 @@
                 var stepsVal = parseInt(getInputValue('#inputSteps', '50'));
                 var widthVal = parseInt(getInputValue('#inputWidth', '512'));
                 var heightVal = parseInt(getInputValue('#inputHeight', '512'));
-
+                
                 if (promptVal === '') {
                     alert("Missing prompt!");
                     return;

@@ -40,7 +40,7 @@ limiter = Limiter(
 
 
 @app.route("/add_job", methods=["POST"])
-@limiter.limit("1/second")
+@limiter.limit("4/second")
 def add_job():
     req = request.get_json()
 
@@ -90,7 +90,7 @@ def add_job():
 
 
 @app.route("/cancel_job", methods=["POST"])
-@limiter.limit("1/second")
+@limiter.limit("4/second")
 def cancel_job():
     req = request.get_json()
     if APIKEY not in req:
@@ -131,7 +131,7 @@ def cancel_job():
 
 
 @app.route("/get_jobs", methods=["POST"])
-@limiter.limit("1/second")
+@limiter.limit("4/second")
 def get_jobs():
     req = request.get_json()
     if APIKEY not in req:
@@ -168,7 +168,7 @@ def get_jobs():
 
 
 @app.route("/random_jobs", methods=["GET"])
-@limiter.limit("1/second")
+@limiter.limit("4/second")
 def random_jobs():
     # define max number of jobs to fetch from db
     job_count_limit = 20
