@@ -24,13 +24,15 @@ class Model:
         inpainting_model_name: str,
         logger: DummyLogger = DummyLogger(),
         use_gpu: bool = True,
+        gpu_device_name: str = "cuda",
     ):
         self.model_name = model_name
         self.inpainting_model_name = inpainting_model_name
         self.__use_gpu = False
+        self.__gpu_device = gpu_device_name
         if use_gpu and torch.cuda.is_available():
             self.__use_gpu = True
-            logger.info("running on {}".format(torch.cuda.get_device_name("cuda:0")))
+            logger.info("running on {}".format(torch.cuda.get_device_name(self.__gpu_device)))
         else:
             logger.info("running on CPU (expect it to be verrry sloooow)")
         self.__logger = logger
@@ -43,6 +45,9 @@ class Model:
 
     def use_gpu(self):
         return self.__use_gpu
+    
+    def get_gpu_device_name(self):
+        return self.__gpu_device
     
     def update_model_name(self, model_name:str):
         if not model_name or model_name == self.model_name:
@@ -113,7 +118,7 @@ class Model:
                     "failed to load model %s: %s" % (self.model_name, e)
                 )
         if pipeline and self.use_gpu():
-            pipeline.to("cuda")
+            pipeline.to(self.get_gpu_device_name())
             
         self.txt2img_pipeline = pipeline
         self.__default_txt2img_scheduler = pipeline.scheduler
@@ -154,7 +159,7 @@ class Model:
                     % (self.inpainting_model_name, e)
                 )
         if pipeline and self.use_gpu():
-            pipeline.to("cuda")
+            pipeline.to(self.get_gpu_device_name())
         self.inpaint_pipeline = pipeline
         self.__default_inpaint_scheduler = pipeline.scheduler
         empty_memory_cache()

@@ -28,7 +28,7 @@ class Text2Img:
         logger: DummyLogger = DummyLogger(),
     ):
         self.model = model
-        self.__device = "cpu" if not self.model.use_gpu() else "cuda"
+        self.__device = "cpu" if not self.model.use_gpu() else self.model.get_gpu_device_name()
         self.__output_folder = output_folder
         self.__logger = logger
 

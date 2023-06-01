@@ -40,7 +40,9 @@ logger = Logger(name=LOGGER_NAME_BACKEND)
 database = Database(logger)
 
 
-def load_model(logger: Logger, use_gpu: bool, reduce_memory_usage: bool) -> Model:
+def load_model(
+    logger: Logger, use_gpu: bool, gpu_device_name: str, reduce_memory_usage: bool
+) -> Model:
     # model candidates:
     # "runwayml/stable-diffusion-v1-5"
     # "CompVis/stable-diffusion-v1-4"
@@ -56,7 +58,13 @@ def load_model(logger: Logger, use_gpu: bool, reduce_memory_usage: bool) -> Mode
     # "runwayml/stable-diffusion-inpainting"
     inpainting_model_name = "runwayml/stable-diffusion-inpainting"
 
-    model = Model(model_name, inpainting_model_name, logger, use_gpu=use_gpu)
+    model = Model(
+        model_name,
+        inpainting_model_name,
+        logger,
+        use_gpu=use_gpu,
+        gpu_device_name=gpu_device_name,
+    )
     if use_gpu and reduce_memory_usage:
         model.set_low_memory_mode()
     model.load_all()
@@ -172,7 +180,7 @@ def main(args):
     database.set_image_output_folder(args.image_output_folder)
     database.connect(args.db)
 
-    model = load_model(logger, args.gpu, args.reduce_memory_usage)
+    model = load_model(logger, args.gpu, args.gpu_device, args.reduce_memory_usage)
     backend(model, args.gfpgan, args.debug)
 
     database.safe_disconnect()
@@ -189,8 +197,13 @@ if __name__ == "__main__":
         "--db", type=str, default="happysd.db", help="Path to SQLite database file"
     )
 
-    # Add an argument to set the path of the database file
+    # Add an argument to set the 'gpu' flag
     parser.add_argument("--gpu", action="store_true", help="Enable to use GPU device")
+
+    # Add an argument to set the gpu device name
+    parser.add_argument(
+        "--gpu-device", type=str, default="cuda", help="GPU device name"
+    )
 
     # Add an argument to reduce memory usage
     parser.add_argument(
