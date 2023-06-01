@@ -129,7 +129,7 @@ class Database:
         return result[0]
 
     def get_random_jobs(self, limit_count=0) -> list:
-        query = f"SELECT {', '.join(ANONYMOUS_KEYS)} FROM {HISTORY_TABLE_NAME} WHERE rowid IN (SELECT rowid FROM {HISTORY_TABLE_NAME} WHERE {KEY_JOB_STATUS} = ? AND {KEY_IS_PRIVATE} = ? AND {KEY_JOB_TYPE} IN (?, ?, ?) ORDER BY RANDOM() LIMIT ?)"
+        query = f"SELECT {', '.join(ANONYMOUS_KEYS)} FROM {HISTORY_TABLE_NAME} WHERE rowid IN (SELECT rowid FROM {HISTORY_TABLE_NAME} WHERE {KEY_JOB_STATUS} = ? AND {KEY_IS_PRIVATE} = ? AND {KEY_JOB_TYPE} IN (?, ?, ?) ORDER BY RANDOM() LIMIT ?) ORDER BY created_at DESC"
 
         # execute the query and return the results
         c = self.get_cursor()
