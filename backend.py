@@ -1,5 +1,6 @@
 import argparse
 import torch
+import os
 
 from utilities.constants import LOGGER_NAME_BACKEND
 from utilities.constants import LOGGER_NAME_TXT2IMG
@@ -41,7 +42,7 @@ database = Database(logger)
 
 
 def load_model(
-    logger: Logger, use_gpu: bool, gpu_device_name: str, reduce_memory_usage: bool
+    logger: Logger, use_gpu: bool, gpu_device_name: str, reduce_memory_usage: bool, model_caching_folder_path: str
 ) -> Model:
     # model candidates:
     # "runwayml/stable-diffusion-v1-5"
@@ -56,7 +57,7 @@ def load_model(
     model_name = "SG161222/Realistic_Vision_V2.0"
     # inpainting model candidates:
     # "runwayml/stable-diffusion-inpainting"
-    inpainting_model_name = "runwayml/stable-diffusion-inpainting"
+    inpainting_model_name = "https://huggingface.co/SG161222/Realistic_Vision_V2.0/resolve/main/Realistic_Vision_V2.0-inpainting.ckpt"
 
     model = Model(
         model_name,
@@ -64,6 +65,7 @@ def load_model(
         logger,
         use_gpu=use_gpu,
         gpu_device_name=gpu_device_name,
+        model_caching_folder_path=model_caching_folder_path,
     )
     if use_gpu and reduce_memory_usage:
         model.set_low_memory_mode()
@@ -180,7 +182,10 @@ def main(args):
     database.set_image_output_folder(args.image_output_folder)
     database.connect(args.db)
 
-    model = load_model(logger, args.gpu, args.gpu_device, args.reduce_memory_usage)
+    if not os.path.isdir(args.model_caching_folder):
+        os.makedirs(args.model_caching_folder, exist_ok=True)
+
+    model = load_model(logger, args.gpu, args.gpu_device, args.reduce_memory_usage, args.model_caching_folder)
     backend(model, args.gfpgan, args.debug)
 
     database.safe_disconnect()
@@ -203,6 +208,11 @@ if __name__ == "__main__":
     # Add an argument to set the gpu device name
     parser.add_argument(
         "--gpu-device", type=str, default="cuda", help="GPU device name"
+    )
+
+    # Add an argument to set the gpu device name
+    parser.add_argument(
+        "--model-caching-folder", type=str, default="/tmp", help="Where to download models for caching"
     )
 
     # Add an argument to reduce memory usage
