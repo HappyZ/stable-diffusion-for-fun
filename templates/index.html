@@ -119,8 +119,7 @@
                             <label for="strength" class="input-group-text" data-en_XX="Strength"
                                 data-zh_CN="改变程度">Strength</label>
                             <input type="number" class="form-control" id="inputStrength"
-                                aria-describedby="inputStrengthHelp" placeholder="0.5" min="0"
-                                max="1">
+                                aria-describedby="inputStrengthHelp" placeholder="0.5" min="0" max="1">
                         </div>
                         <div id="inputStrengthHelp" class="form-text"
                             data-en_XX="How different from the original image. 0 means the same, 1 means very different."
@@ -169,8 +168,12 @@
                                     data-zh_CN="图片->图片">Image-to-Image</a>
                             </li>
                             <li class="nav-item">
+                                <a class="nav-link" href="#card-drawing" data-en_XX="Drawing"
+                                    data-zh_CN="绘画创作">Drawing</a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link" href="#card-inpainting" data-en_XX="Inpainting"
-                                    data-zh_CN="图片修复">Inpainting</a>
+                                    data-zh_CN="图像重建">Inpainting</a>
                             </li>
                         </ul>
                     </div>
@@ -235,6 +238,73 @@
                             </div>
                         </div>
                     </div>
+                    <div class="card-body stable-diffusion-specific" id="card-drawing" style="display:none">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header" data-en_XX="1. Draw It" data-zh_CN="1. 画画">
+                                        1. Draw It
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <button id="newDrawingJob" class="btn btn-primary mb-3"
+                                                data-en_XX="Let's Go with Sketching Below!"
+                                                data-zh_CN="就用下面的草稿生成！">Let's
+                                                Let's Go with Sketching Below!</button>
+                                        </div>
+                                        <div class="input-group mb-3">
+                                            <button id="drawing-reset" class="btn btn-outline-secondary"
+                                                data-en_XX="Reset" data-zh_CN="重置">Reset</button>
+                                            <button id="drawing-undo" class="btn btn-outline-secondary"
+                                                data-en_XX="Undo" data-zh_CN="撤销">Undo</button>
+                                            <button id="drawing-redo" class="btn btn-outline-secondary"
+                                                data-en_XX="Redo" data-zh_CN="重做">Redo</button>
+                                        </div>
+                                        <div class="form-row">
+                                            <label for="drawing-strike-size" class="form-label" data-en_XX="Strike Size"
+                                                data-zh_CN="笔触大小">Strike Size</label>
+                                            <input type="range" class="form-range" min="1" max="50"
+                                                id="drawing-strike-size">
+                                            <output id='drawing-range-value'></output>
+                                        </div>
+                                    </div>
+                                    <div class="card-img-bottom" id="drawing-mask-canvas-container"
+                                        style="cursor: pointer">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header" data-en_XX="2. Result" data-zh_CN="2. 结果">
+                                        2. Result
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-group">
+                                            <li
+                                                class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span id="drawingJobUUID"></span>
+                                                <span class="badge bg-primary rounded-pill" data-en_XX="Job UUID"
+                                                    data-zh_CN="图片唯一识别码">Job UUID</span>
+                                            </li>
+                                            <li
+                                                class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span id="drawingStatus"></span>
+                                                <span class="badge bg-primary rounded-pill" data-en_XX="Job Status"
+                                                    data-zh_CN="生成状态">Job Status</span>
+                                            </li>
+                                            <li
+                                                class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span id="drawingSeed"></span>
+                                                <span class="badge bg-primary rounded-pill" data-en_XX="Job Seed"
+                                                    data-zh_CN="图片随机数">Job Seed</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <img class="card-img-bottom downloadable-img" id="drawingImg">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="card-body stable-diffusion-specific" id="card-inpainting" style="display:none">
                         <div class="row">
                             <div class="col-md-4">
@@ -283,7 +353,7 @@
                                                 data-zh_CN="笔触大小">Strike Size</label>
                                             <input type="range" class="form-range" min="1" max="50"
                                                 id="inpaint-strike-size">
-                                            <output id='range-value'></output>
+                                            <output id='inpaint-range-value'></output>
                                         </div>
                                     </div>
                                     <div class="card-img-bottom" style="position: relative;">
@@ -461,7 +531,7 @@
             link.click();
         }
 
-        function waitForImage(apikeyVal, uuidValue) {
+        function waitForImage(apikeyVal, uuidValue, jobType) {
             // Wait until image is done
             $.ajax({
                 type: 'POST',
@@ -472,7 +542,7 @@
                 success: function (response) {
                     console.log(response);
                     if (response.jobs.length == 1) {
-                        if (response.jobs[0].type == 'txt') {
+                        if (jobType == 'txt') {
                             $('#txt2ImgStatus').html(response.jobs[0].status);
                             $('#txt2ImgSeed').html(response.jobs[0].seed);
                             $('#txt2ImgJobUUID').html(uuidValue);
@@ -483,7 +553,7 @@
                             if (response.jobs[0].status == "failed") {
                                 return;
                             }
-                        } else if (response.jobs[0].type == 'img') {
+                        } else if (jobType == 'img') {
                             $('#img2ImgStatus').html(response.jobs[0].status);
                             $('#img2ImgSeed').html(response.jobs[0].seed);
                             $('#img2ImgJobUUID').html(uuidValue);
@@ -494,7 +564,18 @@
                             if (response.jobs[0].status == "failed") {
                                 return;
                             }
-                        } else if (response.jobs[0].type == 'inpaint') {
+                        } else if (jobType == 'draw') {
+                            $('#drawingStatus').html(response.jobs[0].status);
+                            $('#drawingSeed').html(response.jobs[0].seed);
+                            $('#drawingJobUUID').html(uuidValue);
+                            if (response.jobs[0].status == "done") {
+                                $('#drawingImg').attr('src', response.jobs[0].img).attr('download', uuidValue + ".png");
+                                return;
+                            }
+                            if (response.jobs[0].status == "failed") {
+                                return;
+                            }
+                        } else if (jobType == 'inpaint') {
                             $('#inpaintStatus').html(response.jobs[0].status);
                             $('#inpaintSeed').html(response.jobs[0].seed);
                             $('#inpaintJobUUID').html(uuidValue);
@@ -507,11 +588,11 @@
                             }
                         }
                     }
-                    setTimeout(function () { waitForImage(apikeyVal, uuidValue); }, 1500);  // refresh every 1.5 second
+                    setTimeout(function () { waitForImage(apikeyVal, uuidValue, jobType); }, 1500);  // refresh every 1.5 second
                 },
                 error: function (xhr, status, error) {
                     console.log(error);
-                    setTimeout(function () { waitForImage(apikeyVal, uuidValue); }, 1500);  // refresh every 1.5 second
+                    setTimeout(function () { waitForImage(apikeyVal, uuidValue, jobType); }, 1500);  // refresh every 1.5 second
                 }
             });
         }
@@ -549,6 +630,13 @@
             }
 
             return result;
+        }
+
+
+        // Helper function to get input field value or a default value if empty
+        function getInputValue(id, defaultValue) {
+            var value = $(id).val().trim();
+            return value !== '' ? value : defaultValue;
         }
 
         $(document).ready(function () {
@@ -620,7 +708,7 @@
 
             $(document).on('click', '.downloadable-img', function () {
                 var img = $(this);
-                downloadImage(img.attr('src'), img.attr('download') ? img.attr('download'): 'result.png');
+                downloadImage(img.attr('src'), img.attr('download') ? img.attr('download') : 'result.png');
             });
 
             // Cache variable to store the selected image data for img2img
@@ -782,7 +870,7 @@
             });
 
 
-            function submitJob(formData, uuidSelector, statusSelector) {
+            function submitJob(formData, uuidSelector, statusSelector, jobType) {
                 $.ajax({
                     type: 'POST',
                     url: '/add_job',
@@ -794,7 +882,7 @@
                             $(uuidSelector).html(response.uuid);
                         }
                         $(statusSelector).html('Submitting new job..');
-                        waitForImage(formData.apikey, response.uuid);
+                        waitForImage(formData.apikey, response.uuid, jobType);
                     },
                     error: function (xhr, status, error) {
                         // Handle error response
@@ -806,19 +894,13 @@
             $('#newTxt2ImgJob').click(function (e) {
                 e.preventDefault(); // Prevent the default form submission
 
-                // Helper function to get input field value or a default value if empty
-                function getInputValue(id, defaultValue) {
-                    var value = $(id).val().trim();
-                    return value !== '' ? value : defaultValue;
-                }
-
                 // Validate input field values
                 var promptVal = getInputValue('#prompt', '');
                 var guidanceScaleVal = parseFloat(getInputValue('#inputGuidanceScale', '7.5'));
                 var stepsVal = parseInt(getInputValue('#inputSteps', '50'));
                 var widthVal = parseInt(getInputValue('#inputWidth', '512'));
                 var heightVal = parseInt(getInputValue('#inputHeight', '512'));
-                
+
                 if (promptVal === '') {
                     alert("Missing prompt!");
                     return;
@@ -857,7 +939,7 @@
                     'is_private': $('#isPrivate').is(":checked") ? 1 : 0
                 };
 
-                submitJob(formData, '#txt2ImgJobUUID', '#txt2ImgStatus');
+                submitJob(formData, '#txt2ImgJobUUID', '#txt2ImgStatus', 'txt');
             });
 
             $('#newImg2ImgJob').click(function (e) {
@@ -866,12 +948,6 @@
                 if (imageData == null) {
                     alert("No image cached");
                     return;
-                }
-
-                // Helper function to get input field value or a default value if empty
-                function getInputValue(id, defaultValue) {
-                    var value = $(id).val().trim();
-                    return value !== '' ? value : defaultValue;
                 }
 
                 // Validate input field values
@@ -932,7 +1008,98 @@
                     'is_private': $('#isPrivate').is(":checked") ? 1 : 0
                 };
 
-                submitJob(formData, '#img2ImgJobUUID', '#img2ImgStatus');
+                submitJob(formData, '#img2ImgJobUUID', '#img2ImgStatus', 'img');
+            });
+
+
+            $('#newDrawingJob').click(function (e) {
+                e.preventDefault(); // Prevent the default form submission
+
+                // Validate input field values
+                var promptVal = getInputValue('#prompt', '');
+                var guidanceScaleVal = parseFloat(getInputValue('#inputGuidanceScale', '25.0'));
+                var stepsVal = parseInt(getInputValue('#inputSteps', '50'));
+                var widthVal = parseInt(getInputValue('#inputWidth', '512'));
+                var heightVal = parseInt(getInputValue('#inputHeight', '512'));
+
+                if (promptVal === '') {
+                    alert("Missing prompt!");
+                    return;
+                }
+
+                if (guidanceScaleVal < 1 || guidanceScaleVal > 30) {
+                    alert("Guidance scale must be between 1 and 30!");
+                    return;
+                }
+
+                if (widthVal < 8 || widthVal > 960 || widthVal % 8 !== 0) {
+                    alert("Width must be between 8 and 960 and divisible by 8!");
+                    return;
+                }
+
+                if (heightVal < 8 || heightVal > 960 || heightVal % 8 !== 0) {
+                    alert("Height must be between 8 and 960 and divisible by 8!");
+                    return;
+                }
+
+                var apikeyVal = $('#apiKey').val();
+                var negPromptVal = $('#negPrompt').val();
+                var seedVal = $('#inputSeed').val();
+
+                if (seedVal == "0" || seedVal == "") {
+                    seedVal = "0";
+                }
+
+                var strengthVal = parseFloat(getInputValue('#inputStrength', '0.5'));
+
+                if (strengthVal < 0 || strengthVal > 1) {
+                    alert("Strength must be between 0 and 1!");
+                    return;
+                }
+
+                var canvas = $('#drawing-img-mask')[0];
+                var ctx = canvas.getContext('2d');
+                var sketchImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+                // Loop through the pixels and change the colors
+                for (var i = 0; i < sketchImageData.data.length; i += 4) {
+                    if (sketchImageData.data[i + 3] == 0) { // If pixel is transparent, change to white
+                        sketchImageData.data[i] = 255;
+                        sketchImageData.data[i + 1] = 255;
+                        sketchImageData.data[i + 2] = 255;
+                        sketchImageData.data[i + 3] = 255;
+                    } else { // If pixel is not transparent, change to black
+                        sketchImageData.data[i] = 0;
+                        sketchImageData.data[i + 1] = 0;
+                        sketchImageData.data[i + 2] = 0;
+                        sketchImageData.data[i + 3] = 255;
+                    }
+                }
+
+                var tempCanvas = document.createElement('canvas'); // Create a new canvas element
+                tempCanvas.width = canvas.width; // Set the width of the new canvas to match the original canvas
+                tempCanvas.height = canvas.height; // Set the height of the new canvas to match the original canvas
+                var tempCtx = tempCanvas.getContext('2d');
+                tempCtx.putImageData(sketchImageData, 0, 0); // Put modified image data onto the new canvas
+                var drawingSketchImg = tempCanvas.toDataURL(); // Get the modified base64-encoded image data
+
+                var formData = {
+                    'apikey': apikeyVal,
+                    'type': 'img',
+                    'ref_img': drawingSketchImg,
+                    'prompt': promptVal,
+                    'seed': seedVal,
+                    'steps': stepsVal,
+                    'width': widthVal,
+                    'height': heightVal,
+                    'lang': $("#language option:selected").val(),
+                    'guidance_scale': guidanceScaleVal,
+                    'strength': strengthVal,
+                    'neg_prompt': negPromptVal,
+                    'is_private': $('#isPrivate').is(":checked") ? 1 : 0
+                };
+
+                submitJob(formData, '#drawingJobUUID', '#drawingStatus', 'draw');
             });
 
             $('#newInpaintingJob').click(function (e) {
@@ -969,11 +1136,6 @@
                 tempCtx.putImageData(maskImageData, 0, 0); // Put modified image data onto the new canvas
                 var inpaintMaskImg = tempCanvas.toDataURL(); // Get the modified base64-encoded image data
 
-                // Helper function to get input field value or a default value if empty
-                function getInputValue(id, defaultValue) {
-                    var value = $(id).val().trim();
-                    return value !== '' ? value : defaultValue;
-                }
 
                 // Validate input field values
                 var apikeyVal = $('#apiKey').val();
@@ -1021,7 +1183,7 @@
                     'is_private': $('#isPrivate').is(":checked") ? 1 : 0
                 };
 
-                submitJob(formData, '#inpaintJobUUID', '#inpaintStatus');
+                submitJob(formData, '#inpaintJobUUID', '#inpaintStatus', 'inpaint');
             });
 
             // Define the function to update the text based on the selected language
@@ -1099,10 +1261,10 @@
 
             $("#inpaint-strike-size").on("input", function () {
                 var strikeSize = $(this).val();
-                $('#range-value').val(strikeSize);
+                $('#inpaint-range-value').val(strikeSize);
                 $("#inpaint-strike-size").trigger("inputChange", strikeSize);
             });
-            $('#range-value').val($('#inpaint-strike-size').val());
+            $('#inpaint-range-value').val($('#inpaint-strike-size').val());
 
             $("#inpaint-img").on("change", function () {
                 var src = $(this).attr("src");
@@ -1131,6 +1293,53 @@
                     $sketcher.sketchable('config', { graphics: { lineWidth: strikeSize } });
                 });
             });
+
+            $("#drawing-strike-size").on("input", function () {
+                var strikeSize = $(this).val();
+                $('#drawing-range-value').val(strikeSize);
+                $("#drawing-strike-size").trigger("inputChange", strikeSize);
+            });
+            $('#drawing-range-value').val($('#drawing-strike-size').val());
+
+            $(document).on('change', "#inputWidth, #inputHeight", function () {
+                var widthVal = parseInt(getInputValue('#inputWidth', '512'));
+                var heightVal = parseInt(getInputValue('#inputHeight', '512'));
+                if (widthVal < 8 || widthVal > 960 || widthVal % 8 !== 0) {
+                    alert("Width must be between 8 and 960 and divisible by 8!");
+                    return;
+                }
+
+                if (heightVal < 8 || heightVal > 960 || heightVal % 8 !== 0) {
+                    alert("Height must be between 8 and 960 and divisible by 8!");
+                    return;
+                }
+
+                $("#drawing-mask-canvas-container").html("<canvas id='drawing-img-mask' width=" + widthVal + " height=" + heightVal + ">");
+
+                var options = {
+                    graphics: {
+                        firstPointSize: 0,
+                        lineWidth: $("#drawing-strike-size").val(),
+                        strokeStyle: 'black',
+                    }
+                };
+
+                $sketcher = $('#drawing-img-mask').sketchable(options);
+                $('#drawing-reset').click(function () {
+                    $sketcher.sketchable('clear');
+                });
+                $('#drawing-undo').click(function () {
+                    $sketcher.sketchable('memento.undo');
+                });
+                $('#drawing-redo').click(function () {
+                    $sketcher.sketchable('memento.redo');
+                });
+                $("#drawing-strike-size").on("inputChange", function (e, strikeSize) {
+                    $sketcher.sketchable('config', { graphics: { lineWidth: strikeSize } });
+                });
+            });
+            $('#inputWidth').trigger('change');
+
         });
 
     </script>
